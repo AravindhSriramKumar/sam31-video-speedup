@@ -8,7 +8,7 @@ Module map (one idea per file):
   controller.py  find_vit, EventfulController: swaps vit.blocks, resets gate state
   pipeline.py    FrameIndexTap + SequentialTrunkAdapter: frame-order-aware trunk inside the full predictor
   instrument.py  measurement-only CUDA-event timing of pipeline steps and trunk calls
-  timing.py      timing primitives;  metrics.py feature-error metrics;  tolerances.py test limits
+  timing.py      timing primitives;  metrics.py feature-error metrics;  test limits
   nvtx.py        optional labels inside our own modules (NVTX and/or torch.profiler record_function)
   annotate.py    measurement-only labels attached to SAM modules/methods from outside (same two forms)
   traceutil.py   kernel-name families shared by the trunk harness and the trace analysis

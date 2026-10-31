@@ -8,7 +8,7 @@ It holds a reference to the original block (no weight copies) and re-states `Blo
     _mlp(rows)   rows = norm2 output, image order
 
 Without a config the hooks call the original layers, so the block is numerically identical to `Block`
-(tests/eventful/test_block_equivalence.py checks it bit for bit). With an EventfulConfig the selected
+(bit for bit). With an EventfulConfig the selected
 hooks go through a GatedOp (eventful/gates.py) that recomputes only the K most-changed tokens:
     qkv gate   input = norm1 output rows in attention order; caches qkv BEFORE RoPE, so RoPE (and attention)
                still run on all rows every frame

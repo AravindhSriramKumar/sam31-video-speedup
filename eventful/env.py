@@ -46,7 +46,6 @@ def load_trunk(device="cuda"):
     The predictor builds its trunk with `_create_vit_backbone(compile_mode=None, use_fa3=False,
     use_rope_real=True)` (via `_create_multiplex_tri_backbone`) and loads the tensors under
     `detector.backbone.vision_backbone.trunk.`. Building only the trunk takes seconds instead of ~100 s.
-    `tests/eventful/test_baseline.py::test_trunk_loader_matches_predictor` checks the two are identical.
     """
     from sam3.model_builder import _create_vit_backbone
 

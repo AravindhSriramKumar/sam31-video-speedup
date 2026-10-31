@@ -15,7 +15,6 @@ It includes four methods, each at its best configuration: dense SAM 3.1, EP-ViT,
 - [Usage](#usage)
     - [Inference](#inference)
     - [Evaluation](#evaluation)
-    - [Tests](#tests)
 - [Main Results](#main-results)
 - [Acknowledgments](#acknowledgments)
 
@@ -206,17 +205,6 @@ python experiments/analyze_results.py
 Accuracy should match the committed tables. Latency depends on your GPU and host load, so compare methods within one machine, ideally side by side.
 
 To try one pair, pass a JSON list of pair ids with `--pair-ids`.
-
-### Tests
-
-```bash
-python tests/test_protocol.py            # repository checks, offline
-python tests/test_epvit.py               # EP-ViT CPU tests
-EPVIT_GPU=0 python tests/test_epvit.py   # adds GPU tests (needs checkpoint and data)
-for t in annotate baseline block_equivalence gates pipeline_adapter; do
-  CUDA_VISIBLE_DEVICES=0 python tests/eventful/test_$t.py   # Eventful tests (need checkpoint and data)
-done
-```
 
 ## Main Results
 

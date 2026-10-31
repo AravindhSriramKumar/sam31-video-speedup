@@ -19,7 +19,7 @@ Per frame (paper Sec. 4.2, mapped to SAM 3.1):
     from its motion-vector source (gather, then scatter);
   * the block-31 output rows are written into the output buffer; the trunk returns a copy of it.
 A flush (first frame, I-frame, non-consecutive frame) is the same code path with all N tokens selected, and it is
-numerically the original ViT (tests/test_epvit.py checks this).
+numerically the original ViT.
 
 Repeated frames: SAM 3.1's pipeline encodes frames 0 and 1 for the prompt and then 0, 1, 2, ... again. A frame that
 was already encoded in this session is served from a small output cache, without touching the reuse state.

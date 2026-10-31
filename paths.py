@@ -19,7 +19,6 @@ VIDEOS = DATA / "videos"                         # optional local demo clips for
 RESULTS = PROJECT / "results"
 RUNS = RESULTS / "runs"                         # output of new runs (git-ignored); committed results sit beside it
 RES_EVENTFUL = RUNS / "eventful"                # output of new Eventful runs
-EVENTFUL_RESULTS = RESULTS / "eventful"         # committed Eventful results
 
 
 if __name__ == "__main__":

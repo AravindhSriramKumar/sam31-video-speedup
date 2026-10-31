@@ -4,6 +4,7 @@ from pathlib import Path
 PROJECT = Path(__file__).resolve().parent
 
 SAM3_REPO = PROJECT / "third_party/sam3"
+SAM3_SAMPLE_VIDEO = SAM3_REPO / "assets/videos/0001"   # SAM 3 sample clip; not part of third_party/sam3 here
 CKPT = PROJECT / "checkpoints/sam3.1_multiplex.pt"
 CKPT_SHA256 = "0567debeec80ba4ac6369540c6c248025283cb3ff2b92827509e57e2b3541cb6"
 
@@ -13,9 +14,12 @@ SAMPLE_FRAMES = DATA / "sample_frames"          # decoded from sample_video.mp4 
 SAMPLE_PRIORS = DATA / "sample_priors"          # <enc_tag>/sample_video.npz (git-ignored)
 SACO_PRIORS = DATA / "saco_sav/priors"          # <enc_tag>/<video>.npz (git-ignored)
 SACO_VIDEOS = DATA / "saco_sav/videos"          # <enc_tag>/<video>.mp4 (git-ignored)
+VIDEOS = DATA / "videos"                         # optional local demo clips for Eventful
 
 RESULTS = PROJECT / "results"
 RUNS = RESULTS / "runs"                         # output of new runs (git-ignored); committed results sit beside it
+RES_EVENTFUL = RUNS / "eventful"                # output of new Eventful runs
+EVENTFUL_RESULTS = RESULTS / "eventful"         # committed Eventful results
 
 
 if __name__ == "__main__":

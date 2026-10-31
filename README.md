@@ -4,9 +4,9 @@
 
 Aravindh Sriram Kumar and Shaik Sadik. CS6886, IIT Madras.
 
-SAM 3.1 re-encodes every video frame with a large Vision Transformer, even when little has changed. This repository measures how much of that work can be reused. It currently holds the dense baseline and EP-ViT, a codec-guided encoder that recomputes only the tokens H.264 motion vectors and residuals mark as changed.
+SAM 3.1 re-encodes every video frame with a large Vision Transformer, even when little has changed. This repository measures how much of that work can be reused. It holds the dense baseline, EP-ViT, a codec-guided encoder that recomputes only the tokens H.264 motion vectors and residuals mark as changed, and Eventful, which recomputes only the tokens that changed most inside the trunk.
 
-> **Status:** Dense B2d and EP-ViT are included and validated. **The Eventful implementation and fused scatter-gather kernels are pending.**
+> **Status:** Dense, EP-ViT, Eventful and the fused kernel are all included, each at its best configuration.
 
 ## Results
 
@@ -16,25 +16,40 @@ SA-Co/VEval SA-V val, 20 videos at 24 fps, 189 (video, noun phrase) pairs, offic
 |---|---:|---:|---:|---:|---:|
 | Dense SAM 3.1 (B2d, compiled) | 48.88 | 0 | 89.9 | 1.00× | 2.699 |
 | EP-ViT 75% (`D_ep75`, compiled) | 48.27 | −0.61 | 68.3 | 1.32× | 2.052 |
+| Eventful | 48.97 | +0.09 | 75.5 | 1.19× | not logged |
+| Eventful + fused kernel | 48.57 | −0.32 | 75.2 | 1.20× | not logged |
 
-pHOTA by subset (Dense → EP-ViT): `normal` 55.45 → 54.25, `high_motion` 38.35 → 38.88.
+The same methods by subset:
+
+| Method | pHOTA `normal` | pHOTA `high_motion` | Encoder ms/frame `normal` | Encoder ms/frame `high_motion` | Speedup `normal` | Speedup `high_motion` |
+|---|---:|---:|---:|---:|---:|---:|
+| Dense | 55.45 | 38.35 | 89.4 | 90.2 | 1.00× | 1.00× |
+| EP-ViT 75% | 54.25 | 38.88 | 68.5 | 68.2 | 1.31× | 1.32× |
+| Eventful | 55.38 | 38.61 | 57.8 | 85.9 | 1.55× | 1.05× |
+| Eventful + fused kernel | 55.35 | 37.80 | 58.4 | 85.0 | 1.53× | 1.06× |
 
 ### End-to-end latency
 
-End-to-end (E2E) is the median per-frame model step. Two measurements exist, and they answer different questions:
+End-to-end (E2E) is the median per-frame model step. Three measurements exist, and they answer different questions:
 
-| Measurement | Pairs | Dense ms | EP-ViT ms | E2E speedup | Use it for |
-|---|---:|---:|---:|---:|---|
-| Controlled: run side by side on idle GPUs | 10 `normal` | 187.5 | 163.6 | **1.15×** | Speedup claims |
-| Controlled: run side by side on idle GPUs | 10 `high_motion` | 188.1 | 165.8 | **1.13×** | Speedup claims |
-| Full sweep: runs days apart on a shared host | 189 | 175.0 | 137.8 | 1.27× (not reliable) | Record of the sweep only |
+| Measurement | Scope | Dense ms | Method ms | E2E speedup | Use it for |
+|---|---|---:|---:|---:|---|
+| EP-ViT, controlled: run side by side on idle GPUs | 10 `normal` pairs | 187.5 | 163.6 | **1.15×** | Speedup claims |
+| EP-ViT, controlled: run side by side on idle GPUs | 10 `high_motion` pairs | 188.1 | 165.8 | **1.13×** | Speedup claims |
+| Eventful, controlled, 40 frames | One `normal` video | 189.6 | 158.5 | **1.20×** | Speedup claims, this video only |
+| Eventful, controlled, 40 frames | One `high_motion` video | 188.0 | 189.8 | **0.99×** | Speedup claims, this video only |
+| EP-ViT, full sweep on a shared host | 189 pairs | 175.0 | 137.8 | 1.27× (not reliable) | Record of the sweep only |
+| Eventful, full sweep on a shared host | 189 pairs | 175.0 | 158.1 | 1.11× (not reliable) | Record of the sweep only |
+| Eventful + fused kernel, full sweep on a shared host | 189 pairs | 175.0 | 155.2 | 1.13× (not reliable) | Record of the sweep only |
 
-The 1.27× is a host-load artefact. EP-ViT doesn't touch the rest of the step, yet that part differed between the sweep runs. Use the controlled numbers.
+The sweep values are affected by host load. EP-ViT doesn't touch the rest of the step, yet that part differed between the sweep runs. The EP-ViT and Eventful controlled measurements use different pairs, so don't compare them directly. The fused kernel has no controlled E2E measurement.
 
 ### Reading these numbers
 
-- `D_ep75` is reported because it has the best balance of accuracy and speed among the configurations with controlled E2E data. `F_ep50` is faster and loses more accuracy; it is not part of this release's results.
-- No significance testing was run on the differences above.
+- **EP-ViT** gives the same speedup on every video and loses a little accuracy on `normal`. **Eventful** stays closest to dense and is the fastest on `normal` videos, but gains little on `high_motion`, where most tokens change.
+- `D_ep75` is reported because it has the best balance of accuracy and speed among the EP-ViT configurations with controlled E2E data.
+- The fused kernel saves about 0.2 ms per frame in the trunk benchmark (74.7 → 74.5 ms). Reading rows by index slows `fc1` by about 10%, which cancels the copies it removes. So plain Eventful stays the best configuration.
+- Accuracy differences this small may be noise. No significance testing was run on the 189-pair differences above.
 - cgF1 is in the tables, but per-video values are noisy, so pHOTA is the main accuracy measure.
 - 198 pairs are attempted. 189 completed in every run and are scored; the other 9 stop on an upstream SAM 3.1 tracker bug or on GPU memory.
 
@@ -64,9 +79,13 @@ Both methods use the same weights. See [`checkpoints/README.md`](checkpoints/REA
 python data/generate_codec_priors.py --sample
 CUDA_VISIBLE_DEVICES=0 python experiments/run_dense.py --sample
 CUDA_VISIBLE_DEVICES=0 python experiments/run_epvit.py --sample --config D_ep75 --compile
+CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --sample
+sh kernels/fused_gemm/build.sh     # once: needs the CUDA toolkit, git and network access
+CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --sample
+python experiments/render_sample.py
 ```
 
-Masks and timings go to `results/runs/sample/`. Change the text prompt with `--prompt`.
+Masks and timings go to `results/runs/sample/`. Change the text prompt with `--prompt`. `render_sample.py` draws the four runs side by side in `results/sample_demo/`.
 
 ### About the sample
 
@@ -131,7 +150,16 @@ python data/generate_codec_priors.py --eval
 CUDA_VISIBLE_DEVICES=0 python experiments/run_epvit.py --subset normal --config D_ep75 --compile
 CUDA_VISIBLE_DEVICES=0 python experiments/run_epvit.py --subset high_motion --config D_ep75 --compile
 
-# Score both on the 189 pairs and compare with results/compiled_results.csv
+# Eventful
+CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --subset normal
+CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --subset high_motion
+
+# Eventful + fused kernel
+sh kernels/fused_gemm/build.sh
+CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --subset normal
+CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --subset high_motion
+
+# Score all four on the 189 pairs and compare with results/compiled_results.csv
 python experiments/analyze_results.py
 ```
 
@@ -139,12 +167,35 @@ Accuracy should match the committed tables. Latency depends on your GPU and host
 
 To try one pair, pass a JSON list of pair ids with `--pair-ids`.
 
+## Eventful
+
+Eventful reuses work between frames inside the ViT trunk. A gate sits around the MLP of each block. Each frame it scores how much every token's input has changed, recomputes the K tokens that changed most, and reuses the cached output for the rest.
+
+The best configuration is `B1:mlp:k3840:lag0.6:bf16ref:torchscore:fb4608:tk:cg`:
+
+| Option | Meaning |
+|---|---|
+| `B1` | Base trunk with bf16 linear weights and compiled RoPE |
+| `mlp` | Gate the MLP only |
+| `k3840` | Start at K = 3,840 of 5,184 tokens (75%) |
+| `lag0.6` | Choose K per frame from how many tokens changed by more than 0.6 on the previous frame |
+| `bf16ref` | Keep the reference cache in bf16 |
+| `torchscore` | Score tokens with PyTorch ops, which the compiler fuses |
+| `fb4608` | Run a dense frame when K reaches 4,608 |
+| `tk` | Select the top K with a Triton kernel |
+| `cg` | Compile with CUDA graphs |
+
+The fused kernel run adds `fgfull`: one CUTLASS kernel for the two MLP GEMMs, reading and writing rows by index. `kernels/fused_gemm/` holds the kernel and `eventful/kernels/` holds its wrapper and the top-K and scoring kernels. It needs the NVIDIA CUDA toolkit, `git` and network access for the first CUTLASS download. If `nvcc` isn't on `PATH`, set `NVCC` to its full path. `ARCH` sets the target and defaults to `sm_86`. Everything else runs without it.
+
 ## Tests
 
 ```bash
 python tests/test_protocol.py            # repository checks, offline
 python tests/test_epvit.py               # EP-ViT CPU tests
 EPVIT_GPU=0 python tests/test_epvit.py   # adds GPU tests (needs checkpoint and data)
+for t in annotate baseline block_equivalence gates pipeline_adapter; do
+  CUDA_VISIBLE_DEVICES=0 python tests/eventful/test_$t.py   # Eventful tests (need checkpoint and data)
+done
 ```
 
 ## Repository layout
@@ -153,26 +204,15 @@ EPVIT_GPU=0 python tests/test_epvit.py   # adds GPU tests (needs checkpoint and 
 checkpoints/          checkpoint instructions
 data/                 sample video, dataset download and validation, codec priors, frozen protocol
 epvit/                EP-ViT encoder and codec code
-experiments/          runners, analysis
+eventful/             Eventful gates, controller and kernels
+experiments/          runners for each method, scoring and the sample renderer
 experiments/harness/  shared runtime, baselines, timing, sessions, scoring
+kernels/fused_gemm/   fused GEMM kernel and its build script
 report/               technical report (draft)
-results/              validated results; new runs go to results/runs/ (git-ignored)
+results/              dense/, epvit/, eventful/, eventful_fused/, tables, sample_demo/; new runs go to results/runs/ (git-ignored)
 tests/                tests
 third_party/sam3/     vendored SAM 3.1
 ```
-
-## Adding Eventful and fused kernels
-
-The pending work fits the existing layout, using the same checkpoint, data and protocol:
-
-| Item | Location |
-|---|---|
-| Eventful implementation, with one code path for standard PyTorch and fused backends | `eventful/` |
-| Fused scatter-gather kernels | `kernels/` |
-| Runners | `experiments/run_eventful.py`, `experiments/run_eventful_fused.py` |
-| Results | `results/eventful/`, `results/eventful_fused/` |
-
-`experiments/harness/pipeline.py` already accepts a stateful trunk through the `controller` argument of `PipelineHandle`.
 
 ## References
 

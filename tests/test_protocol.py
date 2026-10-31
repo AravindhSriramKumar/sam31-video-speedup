@@ -26,8 +26,9 @@ def test_frozen_protocol():
 
 
 def test_no_eventful_dependency():
-    """The Dense and EP-ViT code must import nothing from the pending Eventful implementation."""
-    for f in [*ROOT.glob("experiments/**/*.py"), *ROOT.glob("epvit/**/*.py"), *ROOT.glob("data/*.py")]:
+    """The Dense and EP-ViT code must import nothing from the Eventful implementation."""
+    for f in [*(p for p in ROOT.glob("experiments/**/*.py") if not p.name.startswith("run_eventful")),
+              *ROOT.glob("epvit/**/*.py"), *ROOT.glob("data/*.py")]:
         for node in ast.walk(ast.parse(f.read_text())):
             names = [a.name for a in node.names] if isinstance(node, ast.Import) else \
                 [node.module or ""] if isinstance(node, ast.ImportFrom) else []

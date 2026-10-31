@@ -4,6 +4,7 @@ checkpoints/*
 data/saco_sav/
 data/sample_frames*/
 data/sample_priors/
+data/frames/
 results/runs/
 
 *.pt
@@ -11,6 +12,8 @@ results/runs/
 *.npz
 *.nsys-rep
 *.sqlite
+*.so
+kernels/fused_gemm/cutlass/
 
 # python / tooling
 __pycache__/

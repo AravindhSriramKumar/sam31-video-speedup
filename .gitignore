@@ -1,0 +1,23 @@
+# weights, datasets and everything generated from them
+checkpoints/*
+!checkpoints/README.md
+data/saco_sav/
+data/sample_frames*/
+data/sample_priors/
+results/runs/
+
+*.pt
+*.pth
+*.npz
+*.nsys-rep
+*.sqlite
+
+# python / tooling
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.ipynb_checkpoints/
+.cache/
+*.log

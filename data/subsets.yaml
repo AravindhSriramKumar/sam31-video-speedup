@@ -1,0 +1,34 @@
+# SA-V val video names (from data/annotation/saco_veval_sav_val.json; see `python data/saco_data.py --list`).
+# Selected by data/motion_stats.py (per-video stats in data/motion_stats.csv): frac_changed = mean fraction of
+# cells on SAM 3's 72x72 token grid whose mean |diff| > 8 between consecutive annotated frames.
+# Filter: >= 2 positive NPs, 50-150 annotated frames. normal = 10 lowest frac_changed in the bottom quartile
+# (<= 0.317); high_motion = 10 highest in the top quartile (>= 0.632).
+normal:       # 983 frames, 73 NPs (48 positive), frac_changed 0.06-0.18
+  - sav_006751
+  - sav_012075
+  - sav_006941
+  - sav_052955
+  - sav_038835
+  - sav_014662
+  - sav_030331
+  - sav_010406
+  - sav_046625
+  - sav_009628
+high_motion:  # 936 frames, 125 NPs (52 positive), frac_changed 0.77-0.89
+  - sav_018743
+  - sav_017083
+  - sav_045706
+  - sav_041685
+  - sav_015283
+  - sav_035790
+  - sav_054690
+  - sav_001799
+  - sav_036663
+  - sav_054595
+# smoke: quick-iteration subset (eventful plan v2.1, section 3.2). Rule: in each subset, the 2 videos with the
+# lowest (annotated length x number of noun phrases). Fixed after Phase 0; do not change.
+smoke:        # normal: sav_030331 (75 f, 4 NPs), sav_012075 (111 f, 3 NPs); high_motion: sav_018743 (67 f, 5 NPs), sav_054690 (52 f, 8 NPs)
+  - sav_030331
+  - sav_012075
+  - sav_018743
+  - sav_054690

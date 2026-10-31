@@ -1,0 +1,222 @@
+{
+ "subset": "normal",
+ "preset": "B2d",
+ "preset_config": {
+  "rope": "stock",
+  "bf16_weights": true,
+  "wrap_blocks": false,
+  "compile": "default"
+ },
+ "eventful": null,
+ "eventful_config": null,
+ "grounding_batch": 1,
+ "postprocess_batch": 1,
+ "fps": 24,
+ "hotstart_delay": 15,
+ "adapter": true,
+ "pairs": 73,
+ "pairs_ok": 70,
+ "pairs_crashed": [
+  {
+   "pair_id": 1309,
+   "video": "sav_030331",
+   "noun_phrase": "a car",
+   "frames_yielded": 25,
+   "frames": 75
+  },
+  {
+   "pair_id": 1322,
+   "video": "sav_030331",
+   "noun_phrase": "car",
+   "frames_yielded": 34,
+   "frames": 75
+  },
+  {
+   "pair_id": 0,
+   "video": "sav_009628",
+   "noun_phrase": "red sneaker",
+   "frames_yielded": 291,
+   "frames": 86
+  }
+ ],
+ "videos": 10,
+ "propagate_frames": 28696,
+ "key_metrics": {
+  "cgF1": 0.1542657554213235,
+  "pmF1": 0.30706613955437717,
+  "IL_MCC": 0.5023860841354837,
+  "pHOTA": 0.5544858790005464,
+  "pDetA": 0.368420761820882,
+  "pAssA": 0.8490219037598932,
+  "mask_mAP": 0.30410487715438206,
+  "TETA": 47.975
+ },
+ "all_metrics": {
+  "video_bbox_mAP_50_95": 0.165028236156949,
+  "video_mask_mAP_50_95": 0.30410487715438206,
+  "video_bbox_phrase_ap_50_95": 0.05360511924637764,
+  "video_bbox_phrase_ap_50": 0.10156895817418046,
+  "video_bbox_phrase_ap_75": 0.0546196852437991,
+  "video_mask_phrase_ap_50_95": 0.19095165712431472,
+  "video_mask_phrase_ap_50": 0.2809766963912081,
+  "video_mask_phrase_ap_75": 0.21345146938341714,
+  "video_mask_teta": 47.975,
+  "video_mask_loc_a": 49.003,
+  "video_mask_assoc_a": 57.682,
+  "video_mask_cls_a": 37.241,
+  "video_mask_loc_re": 51.11,
+  "video_mask_loc_pr": 69.475,
+  "video_mask_assoc_re": 59.77,
+  "video_mask_assoc_pr": 68.634,
+  "video_mask_cls_re": 54.36,
+  "video_mask_cls_pr": 37.885,
+  "video_bbox_all_phrase_HOTA": 0.49676923819811414,
+  "video_bbox_all_phrase_DetA": 0.3291525098965383,
+  "video_bbox_all_phrase_AssA": 0.7567661019014816,
+  "video_bbox_all_phrase_DetRe": 0.4121355265949725,
+  "video_bbox_all_phrase_DetPr": 0.5975679854921105,
+  "video_bbox_all_phrase_AssRe": 0.8117305708749661,
+  "video_bbox_all_phrase_AssPr": 0.8744146048045078,
+  "video_bbox_all_phrase_LocA": 0.8744664815682046,
+  "video_bbox_all_phrase_OWTA": 0.5571769226197159,
+  "video_mask_all_phrase_HOTA": 0.5544858790005464,
+  "video_mask_all_phrase_DetA": 0.368420761820882,
+  "video_mask_all_phrase_AssA": 0.8490219037598932,
+  "video_mask_all_phrase_DetRe": 0.4467486347951355,
+  "video_mask_all_phrase_DetPr": 0.6477545964588444,
+  "video_mask_all_phrase_AssRe": 0.869943256407157,
+  "video_mask_all_phrase_AssPr": 0.9375064416056093,
+  "video_mask_all_phrase_LocA": 0.8710651570679347,
+  "video_mask_all_phrase_OWTA": 0.6126554441492893,
+  "video_bbox_demo_cgf1_micro_50_95": 0.0729808871393899,
+  "video_bbox_demo_ilmcc_50_95": 0.5023860841354837,
+  "video_bbox_demo_positive_micro_f1_50_95": 0.14526852841669952,
+  "video_bbox_demo_cgf1_micro_50": 0.12416024407140815,
+  "video_bbox_demo_ilmcc_50": 0.5023860841354837,
+  "video_bbox_demo_positive_micro_f1_50": 0.247141089278111,
+  "video_bbox_demo_cgf1_micro_75": 0.07147560425905991,
+  "video_bbox_demo_ilmcc_75": 0.5023860841354837,
+  "video_bbox_demo_positive_micro_f1_75": 0.14227226134668242,
+  "video_mask_demo_cgf1_micro_50_95": 0.1542657554213235,
+  "video_mask_demo_ilmcc_50_95": 0.5023860841354837,
+  "video_mask_demo_positive_micro_f1_50_95": 0.30706613955437717,
+  "video_mask_demo_cgf1_micro_50": 0.22200315124316125,
+  "video_mask_demo_ilmcc_50": 0.5023860841354837,
+  "video_mask_demo_positive_micro_f1_50": 0.4418974932898248,
+  "video_mask_demo_cgf1_micro_75": 0.16931850860179762,
+  "video_mask_demo_ilmcc_75": 0.5023860841354837,
+  "video_mask_demo_positive_micro_f1_75": 0.3370286597272382
+ },
+ "latency": {
+  "step_ms": {
+   "n": 28738,
+   "median": 171.78033447265625,
+   "mean": 175.94317911655008,
+   "p90": 202.11509704589844,
+   "p10": 150.76864624023438,
+   "min": 146.94009399414062,
+   "max": 650.072021484375,
+   "stdev": 22.779364747412345
+  },
+  "prompt_step_ms": {
+   "n": 73,
+   "median": 315.39813232421875,
+   "mean": 318.64180933286065,
+   "p90": 342.6693115234375,
+   "p10": 300.1989440917969,
+   "min": 294.42559814453125,
+   "max": 392.9302978515625,
+   "stdev": 17.3130444112521
+  },
+  "trunk_call_ms": {
+   "n": 28887,
+   "median": 89.0808334350586,
+   "mean": 89.41099454474548,
+   "p90": 91.05510711669922,
+   "p10": 87.98822021484375,
+   "min": 82.58866882324219,
+   "max": 109.1430435180664,
+   "stdev": 1.8073309430441857
+  },
+  "trunk_ms_per_frame": 89.41099454474548,
+  "trunk_frames_encoded": 28887,
+  "propagate_wall_ms_per_frame": 177.6067460693866,
+  "throughput_fps": 5.630416761361782
+ },
+ "memory": {
+  "peak_mib_max": 15102.7900390625,
+  "peak_mib_median": 5258.126953125
+ },
+ "adapter_sessions": {
+  "encodes": 28887,
+  "reprimes": 146
+ },
+ "provenance": {
+  "timestamp": "2026-10-25T00:11:41",
+  "host": "shared GPU server",
+  "argv": [
+   "scripts/eventful/run_pipeline_eval.py",
+   "--subset",
+   "normal",
+   "--preset",
+   "B2d",
+   "--adapter",
+   "--fps",
+   "24",
+   "--phase",
+   "phase1"
+  ],
+  "git_head": "c780d6d",
+  "torch": "2.10.0+cu128",
+  "cuda": "12.8",
+  "cudnn": 91002,
+  "gpu": {
+   "name": "NVIDIA RTX A5000",
+   "driver_version": "580.178.04",
+   "clocks.sm": "210 MHz",
+   "clocks.mem": "405 MHz",
+   "clocks.max.sm": "2100 MHz",
+   "temperature.gpu": "35",
+   "power.draw": "16.58 W",
+   "power.limit": "230.00 W",
+   "utilization.gpu": "0 %",
+   "memory.used": "9 MiB",
+   "clocks_throttle_reasons.active": "0x0000000000000001",
+   "physical_index": "2"
+  }
+ },
+ "gpu_state": {
+  "segments": 1,
+  "samples": 1262,
+  "sm_mhz": {
+   "n": 1262,
+   "median": 1560.0,
+   "mean": 1525.2812995245642,
+   "p90": 1710.0,
+   "p10": 1440.0,
+   "min": 210.0,
+   "max": 1890.0,
+   "stdev": 294.22010737495697
+  },
+  "temp_c": {
+   "n": 1262,
+   "median": 80.0,
+   "mean": 78.70047543581616,
+   "p90": 83.0,
+   "p10": 72.0,
+   "min": 45.0,
+   "max": 85.0,
+   "stdev": 5.026930621132727
+  },
+  "power_w": {
+   "n": 1262,
+   "median": 210.14499999999998,
+   "mean": 183.01244849445325,
+   "p90": 217.84,
+   "p10": 77.65,
+   "min": 17.38,
+   "max": 228.37,
+   "stdev": 58.25868562149355
+  }
+ }
+}

@@ -1,0 +1,275 @@
+{
+ "subset": "normal",
+ "preset": "B1",
+ "preset_config": {
+  "rope": "compile",
+  "bf16_weights": true,
+  "wrap_blocks": false,
+  "compile": null
+ },
+ "eventful": null,
+ "eventful_config": null,
+ "grounding_batch": 1,
+ "postprocess_batch": 1,
+ "fps": 24,
+ "hotstart_delay": 15,
+ "adapter": false,
+ "pairs": 73,
+ "pairs_ok": 71,
+ "pairs_crashed": [
+  {
+   "pair_id": 1322,
+   "video": "sav_030331",
+   "noun_phrase": "car",
+   "frames_yielded": 34,
+   "frames": 75
+  },
+  {
+   "pair_id": 0,
+   "video": "sav_009628",
+   "noun_phrase": "red sneaker",
+   "frames_yielded": 290,
+   "frames": 86
+  }
+ ],
+ "videos": 10,
+ "propagate_frames": 28967,
+ "key_metrics": {
+  "cgF1": 0.14137467451378255,
+  "pmF1": 0.27882361280086837,
+  "IL_MCC": 0.5070398202420189,
+  "pHOTA": 0.5394859653165179,
+  "pDetA": 0.3579756279317303,
+  "pAssA": 0.8270890525365195,
+  "mask_mAP": 0.2919040849139859,
+  "TETA": 47.277
+ },
+ "all_metrics": {
+  "video_bbox_mAP_50_95": 0.160014301430143,
+  "video_mask_mAP_50_95": 0.2919040849139859,
+  "video_bbox_phrase_ap_50_95": 0.04714120312663959,
+  "video_bbox_phrase_ap_50": 0.08583564564182422,
+  "video_bbox_phrase_ap_75": 0.05262917941803023,
+  "video_mask_phrase_ap_50_95": 0.17718776093424285,
+  "video_mask_phrase_ap_50": 0.2947662714732582,
+  "video_mask_phrase_ap_75": 0.1901232640563214,
+  "video_mask_teta": 47.277,
+  "video_mask_loc_a": 49.213,
+  "video_mask_assoc_a": 56.577,
+  "video_mask_cls_a": 36.041,
+  "video_mask_loc_re": 51.222,
+  "video_mask_loc_pr": 69.553,
+  "video_mask_assoc_re": 58.651,
+  "video_mask_assoc_pr": 68.093,
+  "video_mask_cls_re": 53.781,
+  "video_mask_cls_pr": 36.493,
+  "video_bbox_all_phrase_HOTA": 0.47470822012497615,
+  "video_bbox_all_phrase_DetA": 0.3106747796330125,
+  "video_bbox_all_phrase_AssA": 0.7317122453474907,
+  "video_bbox_all_phrase_DetRe": 0.4007066276803119,
+  "video_bbox_all_phrase_DetPr": 0.5610365040473902,
+  "video_bbox_all_phrase_AssRe": 0.7858164396872471,
+  "video_bbox_all_phrase_AssPr": 0.8595462083673933,
+  "video_bbox_all_phrase_LocA": 0.8760798164449033,
+  "video_bbox_all_phrase_OWTA": 0.5402852721831627,
+  "video_mask_all_phrase_HOTA": 0.5394859653165179,
+  "video_mask_all_phrase_DetA": 0.3579756279317303,
+  "video_mask_all_phrase_AssA": 0.8270890525365195,
+  "video_mask_all_phrase_DetRe": 0.4440678716994507,
+  "video_mask_all_phrase_DetPr": 0.6217473560152592,
+  "video_mask_all_phrase_AssRe": 0.8471489172547502,
+  "video_mask_all_phrase_AssPr": 0.9321137272024093,
+  "video_mask_all_phrase_LocA": 0.8711916708304109,
+  "video_mask_all_phrase_OWTA": 0.6028738012164349,
+  "video_bbox_demo_cgf1_micro_50_95": 0.06281927372574475,
+  "video_bbox_demo_ilmcc_50_95": 0.5070398202420189,
+  "video_bbox_demo_positive_micro_f1_50_95": 0.12389416218978626,
+  "video_bbox_demo_cgf1_micro_50": 0.10709595011042904,
+  "video_bbox_demo_ilmcc_50": 0.5070398202420189,
+  "video_bbox_demo_positive_micro_f1_50": 0.2112180263461562,
+  "video_bbox_demo_cgf1_micro_75": 0.06781824861135709,
+  "video_bbox_demo_ilmcc_75": 0.5070398202420189,
+  "video_bbox_demo_positive_micro_f1_75": 0.1337532988611945,
+  "video_mask_demo_cgf1_micro_50_95": 0.14137467451378255,
+  "video_mask_demo_ilmcc_50_95": 0.5070398202420189,
+  "video_mask_demo_positive_micro_f1_50_95": 0.27882361280086837,
+  "video_mask_demo_cgf1_micro_50": 0.21064626012907367,
+  "video_mask_demo_ilmcc_50": 0.5070398202420189,
+  "video_mask_demo_positive_micro_f1_50": 0.4154432289529619,
+  "video_mask_demo_cgf1_micro_75": 0.15351505412079317,
+  "video_mask_demo_ilmcc_75": 0.5070398202420189,
+  "video_mask_demo_positive_micro_f1_75": 0.30276725415277594
+ },
+ "latency": {
+  "step_ms": {
+   "n": 28995,
+   "median": 137.94406127929688,
+   "mean": 149.09459915042726,
+   "p90": 171.0938262939453,
+   "p10": 129.08338928222656,
+   "min": 57.92665481567383,
+   "max": 3186.387939453125,
+   "stdev": 28.078266301114823
+  },
+  "prompt_step_ms": {
+   "n": 73,
+   "median": 289.1089782714844,
+   "mean": 291.07151439091933,
+   "p90": 299.97259521484375,
+   "p10": 283.0151672363281,
+   "min": 281.39007568359375,
+   "max": 319.246337890625,
+   "stdev": 7.712281377391844
+  },
+  "trunk_call_ms": {
+   "n": 29143,
+   "median": 68.55049896240234,
+   "mean": 68.50525483346509,
+   "p90": 70.00924682617188,
+   "p10": 67.13977813720703,
+   "min": 0.09721600264310837,
+   "max": 3082.125732421875,
+   "stdev": 18.453350337975447
+  },
+  "trunk_ms_per_frame": 68.50525483346509,
+  "trunk_frames_encoded": 29143,
+  "propagate_wall_ms_per_frame": 150.33371523074655,
+  "throughput_fps": 6.6518678026755635
+ },
+ "memory": {
+  "peak_mib_max": 14286.900390625,
+  "peak_mib_median": 6178.392578125
+ },
+ "eventful_reuse": null,
+ "adapter_sessions": null,
+ "provenance": {
+  "timestamp": "2026-10-26T19:18:49",
+  "host": "shared GPU server",
+  "argv": [
+   "experiments/shared_pareto/run_epvit_pipeline.py",
+   "--config",
+   "D_ep75",
+   "--subset",
+   "normal",
+   "--enc",
+   "crf23_g192_iffix",
+   "--compile"
+  ],
+  "git_head": "e3e41be",
+  "torch": "2.10.0+cu128",
+  "cuda": "12.8",
+  "cudnn": 91002,
+  "gpu": {
+   "name": "NVIDIA RTX A5000",
+   "driver_version": "580.178.04",
+   "clocks.sm": "210 MHz",
+   "clocks.mem": "405 MHz",
+   "clocks.max.sm": "2100 MHz",
+   "temperature.gpu": "45",
+   "power.draw": "19.98 W",
+   "power.limit": "230.00 W",
+   "utilization.gpu": "0 %",
+   "memory.used": "9 MiB",
+   "clocks_throttle_reasons.active": "0x0000000000000001",
+   "physical_index": "3"
+  },
+  "epvit": {
+   "config": "D_ep75",
+   "spec": {
+    "frac": 0.75,
+    "ops": "all"
+   },
+   "enc": "crf23_g192_iffix",
+   "compile": {
+    "mode": "default",
+    "dynamic": false
+   },
+   "output_cache_frames": 4
+  }
+ },
+ "epvit": {
+  "config": "D_ep75",
+  "spec": {
+   "frac": 0.75,
+   "ops": "all"
+  },
+  "enc": "crf23_g192_iffix",
+  "k": 3888,
+  "schedule": {
+   "mode": "budget",
+   "k": 3888,
+   "tau1": 4.0,
+   "tau2": 6.0,
+   "lam": 1.0,
+   "theta": 0.5,
+   "intra_max": 0.5,
+   "warp": true,
+   "align": 128,
+   "k_min": 128
+  },
+  "trunk_class": "CompiledEPViT",
+  "frames_in": 29143,
+  "modes": {
+   "flush": 184,
+   "sparse": 28813,
+   "cached": 146
+  },
+  "tokens_recomputed_per_frame_in": 3876.704525958206,
+  "trunk_tmac_per_frame_in": 2.050054578664827,
+  "sched_host_ms": {
+   "n": 28997,
+   "median": 0.7129549630917609,
+   "mean": 0.7207124652594258,
+   "p90": 0.8030360331758857,
+   "p10": 0.643882027361542,
+   "min": 0.05729403346776962,
+   "max": 6.792547996155918,
+   "stdev": 0.12329766955351759
+  },
+  "plan_host_ms": {
+   "n": 28997,
+   "median": 0.24856498930603266,
+   "mean": 0.2531546850747339,
+   "p90": 0.2805630210787058,
+   "p10": 0.22407702635973692,
+   "min": 0.19011000404134393,
+   "max": 6.284377013798803,
+   "stdev": 0.07530753375236532
+  },
+  "state_mib_max": 668.25
+ },
+ "gpu_state": {
+  "segments": 1,
+  "samples": 1003,
+  "sm_mhz": {
+   "n": 1003,
+   "median": 1545.0,
+   "mean": 1563.469591226321,
+   "p90": 1695.0,
+   "p10": 1455.0,
+   "min": 1410.0,
+   "max": 1890.0,
+   "stdev": 101.26678102770555
+  },
+  "temp_c": {
+   "n": 1003,
+   "median": 85.0,
+   "mean": 84.30707876370887,
+   "p90": 87.0,
+   "p10": 81.0,
+   "min": 58.0,
+   "max": 87.0,
+   "stdev": 2.802829317711835
+  },
+  "power_w": {
+   "n": 1003,
+   "median": 211.37,
+   "mean": 195.07509471585246,
+   "p90": 215.33,
+   "p10": 103.54,
+   "min": 66.29,
+   "max": 220.29,
+   "stdev": 40.971864741123355
+  }
+ }
+}

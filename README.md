@@ -1,16 +1,55 @@
-# SAM 3.1 Video Speedup
+# SAM 3.1 Video Speedup: Accelerating SAM 3.1 Video Inference Through Temporal Computation Reuse
 
-**Accelerating SAM 3.1 Video Inference Through Temporal Computation Reuse**
+Authors: Aravindh Sriram Kumar and Shaik Sadik. CS6886, IIT Madras.
 
-Aravindh Sriram Kumar and Shaik Sadik. CS6886, IIT Madras.
+## Introduction
 
-SAM 3.1 re-encodes every video frame with a large Vision Transformer, even when little has changed. This repository measures how much of that work can be reused. It holds the dense baseline, EP-ViT, a codec-guided encoder that recomputes only the tokens H.264 motion vectors and residuals mark as changed, and Eventful, which recomputes only the tokens that changed most inside the trunk.
+This repository contains the code, evaluation protocol and results for our course project on making SAM 3.1 video inference faster. The write-up is in the [technical report](report/SAM31_Technical_Report.pdf) (draft).
 
-> **Status:** Dense, EP-ViT, Eventful and the fused kernel are all included, each at its best configuration.
+It includes four methods, each at its best configuration: dense SAM 3.1, EP-ViT, Eventful, and Eventful with a fused kernel.
 
-## Results
+- [Overview](#overview)
+- [Create Environment](#create-environment)
+- [Prepare Models](#prepare-models)
+- [Prepare Data](#prepare-data)
+- [Usage](#usage)
+    - [Inference](#inference)
+    - [Evaluation](#evaluation)
+    - [Tests](#tests)
+- [Main Results](#main-results)
+- [Acknowledgments](#acknowledgments)
 
-SA-Co/VEval SA-V val, 20 videos at 24 fps, 189 (video, noun phrase) pairs, official evaluator. Measured on an NVIDIA RTX A5000 (24 GB). The full tables are in [`results/`](results/).
+## Overview
+
+### Motivation
+
+SAM 3.1 re-encodes every video frame with a large Vision Transformer, even when little has changed. This project measures how much of that work can be reused between frames.
+
+### Method
+
+**Dense** is the baseline: SAM 3.1 with a compiled trunk and bf16 linear weights (`B2d`).
+
+**EP-ViT** (`D_ep75`, compiled) is a codec-guided encoder. It recomputes only the tokens that H.264 motion vectors and residuals mark as changed.
+
+**Eventful** reuses work inside the ViT trunk. A gate sits around the MLP of each block. Each frame it scores how much every token's input has changed, recomputes the K tokens that changed most, and reuses the cached output for the rest. The best configuration is `B1:mlp:k3840:lag0.6:bf16ref:torchscore:fb4608:tk:cg`:
+
+| Option | Meaning |
+|---|---|
+| `B1` | Base trunk with bf16 linear weights and compiled RoPE |
+| `mlp` | Gate the MLP only |
+| `k3840` | Start at K = 3,840 of 5,184 tokens (75%) |
+| `lag0.6` | Choose K per frame from how many tokens changed by more than 0.6 on the previous frame |
+| `bf16ref` | Keep the reference cache in bf16 |
+| `torchscore` | Score tokens with PyTorch ops, which the compiler fuses |
+| `fb4608` | Run a dense frame when K reaches 4,608 |
+| `tk` | Select the top K with a Triton kernel |
+| `cg` | Compile with CUDA graphs |
+
+**Eventful + fused kernel** adds `fgfull` to that configuration: one CUTLASS kernel for the two MLP GEMMs, reading and writing rows by index.
+
+### Performance
+
+SA-Co/VEval SA-V val, 20 videos at 24 fps, 189 (video, noun phrase) pairs, official evaluator. Measured on an NVIDIA RTX A5000 (24 GB).
 
 | Method | cgF1 | ΔcgF1 | pHOTA | ΔpHOTA | Encoder ms/frame | Encoder speedup | Trunk TMAC/frame |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -19,7 +58,170 @@ SA-Co/VEval SA-V val, 20 videos at 24 fps, 189 (video, noun phrase) pairs, offic
 | Eventful | 12.27 | −0.15 | 48.97 | +0.09 | 75.5 | 1.19× | not logged |
 | Eventful + fused kernel | 11.55 | −0.86 | 48.57 | −0.32 | 75.2 | 1.20× | not logged |
 
-The same methods by subset:
+EP-ViT has the largest overall encoder speedup. Eventful stays closest to dense and is the fastest on `normal` videos. See [Main Results](#main-results) for subsets and end-to-end latency.
+
+---
+
+## Create Environment
+
+### Prerequisites
+
+The code requires an NVIDIA GPU (24 GB for the full evaluation), CUDA 12.8 and `ffmpeg` with libx264 on `PATH`.
+
+```bash
+git clone https://github.com/AravindhSriramKumar/sam31-video-speedup.git
+cd sam31-video-speedup
+conda env create -f environment.yml
+conda activate sam31
+pip install -e third_party/sam3
+```
+
+Tested with Python 3.12, PyTorch 2.10.0, PyAV 19.0.2, ffmpeg 4.4.2 and CUDA 12.8. Exact package versions are in `requirements.txt`. `third_party/sam3/VENDORED.md` records the vendored SAM 3.1 commit and its local patch.
+
+### Fused kernel
+
+Only the fused kernel runs need this step. It needs the NVIDIA CUDA toolkit, `git` and network access for the first CUTLASS download.
+
+```bash
+sh kernels/fused_gemm/build.sh
+```
+
+If `nvcc` isn't on `PATH`, set `NVCC` to its full path. `ARCH` sets the target and defaults to `sm_86`. `kernels/fused_gemm/` holds the kernel, and `eventful/kernels/` holds its wrapper and the top-K and scoring kernels.
+
+## Prepare Models
+
+All four methods use the same weights, `sam3.1_multiplex.pt`, from the gated Hugging Face repository [`facebook/sam3.1`](https://huggingface.co/facebook/sam3.1). After your access is approved:
+
+```bash
+hf auth login
+hf download facebook/sam3.1 sam3.1_multiplex.pt --local-dir checkpoints
+```
+
+See [`checkpoints/README.md`](checkpoints/README.md) for the SHA-256. Run `python paths.py` to see which inputs are present.
+
+## Prepare Data
+
+### Evaluation data
+
+```bash
+hf auth login                      # needs approved access to facebook/SACo-VEval
+bash data/download_saco_eval.sh
+```
+
+- **Annotations:** `facebook/SACo-VEval` on Hugging Face (gated, manual approval), checked against a SHA-256.
+- **Frames:** the SA-V frames hosted by Roboflow, the ready-to-use source linked from SAM 3's [VEval instructions](third_party/sam3/scripts/eval/veval/README.md). They come from `https://sa-co.roboflow.com/veval/saco_sav.zip`. This is not a Meta-hosted URL; Meta's SA-V page was unavailable when this was built.
+- **Size:** the script reads only the byte ranges of the 20 videos (2.2 GB) from the 32.6 GB archive. If the host stops honouring range requests, it downloads the whole archive instead, resumably.
+- **Re-running** skips finished videos and resumes an interrupted one.
+
+Output goes to `data/saco_sav/JPEGImages_24fps/`. Validate it at any time:
+
+```bash
+python data/prepare_saco_eval.py
+```
+
+This checks the annotation hash, the 20 video ids and order, each video's frame hash and order, the 7,616 frames fed at 24 fps, and the 198 and 189 pair counts. The expected values are in `data/eval_pairs.json`. It exits non-zero on any mismatch.
+
+### Codec priors
+
+EP-ViT needs H.264 motion vectors, residuals, intra shares and frame types on the token grid. They are generated, not stored in Git.
+
+```bash
+python data/generate_codec_priors.py --sample   # data/sample_priors/
+python data/generate_codec_priors.py --eval     # data/saco_sav/priors/, CPU only
+```
+
+The encoding is libx264, CRF 23, GOP 192, I and P frames only, one reference frame (`crf23_g192`). `_iffix` means frame types come from ffprobe, because `epvit/codec/extract.py` mislabels later I-frames under PyAV 19 and EP-ViT would then never flush on them. Use `--videos sav_017083` to process a subset.
+
+## Usage
+
+### Inference
+
+`data/sample_video.mp4` is committed, so this needs only the checkpoint. It's a smoke test: it proves the code runs and reports timing, but there's **no ground truth and no accuracy score**.
+
+```bash
+python data/generate_codec_priors.py --sample
+CUDA_VISIBLE_DEVICES=0 python experiments/run_dense.py --sample
+CUDA_VISIBLE_DEVICES=0 python experiments/run_epvit.py --sample --config D_ep75 --compile
+CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --sample
+CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --sample
+python experiments/render_sample.py
+```
+
+Masks and timings go to `results/runs/sample/`. Change the text prompt with `--prompt`. `render_sample.py` draws the four runs side by side in `results/sample_demo/`.
+
+Results for the prompt `a paw`, with all four methods run back to back on one idle GPU:
+
+| Method | Encoder ms/frame | Encoder speedup | Median step ms | E2E speedup | Mask agreement with Dense | pHOTA, `sav_017083` | cgF1, `sav_017083` |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Dense | 87.9 | 1.00× | 197.1 | 1.00× | 1.000 | 30.68 | 1.80 |
+| EP-ViT 75% | 67.8 | 1.30× | 176.9 | 1.11× | 0.765 | 27.45 | 1.19 |
+| Eventful | 80.4 | 1.09× | 191.7 | 1.03× | 0.851 | 31.02 | 2.65 |
+| Eventful + fused kernel | 80.5 | 1.09× | 191.0 | 1.03× | 0.851 | 30.49 | 2.39 |
+
+- **The sample run has no ground truth,** so it gives no accuracy score of its own. pHOTA and cgF1 above come from the 17 scored evaluation pairs of the same video, `sav_017083`, in `results/per_video_results.csv`. They use other text prompts and the native frames, not the `a paw` run. One video is noisy, especially for cgF1.
+- **Mask agreement** is the mean per-frame IoU with Dense on the `a paw` run. It shows how close the masks are to Dense, not which is right.
+- **Eventful gains less here than on `normal` videos** because this clip is mostly high-motion, so most tokens are recomputed.
+
+The masks of all four methods are side by side in [`comparison.mp4`](results/sample_demo/comparison.mp4). Colours mark object ids, which differ between runs, so a paw can change colour across panels.
+
+The sample is SA-V video `sav_017083`, 480×848, 24 fps, 577 frames (24 s), 6.2 MB, copied unchanged from this project's `crf23_g192` encode. It is also one of the 20 evaluation videos. Motion below is the share of 72×72 token cells whose mean absolute luma change between consecutive frames exceeds 8.
+
+| Interval | Motion | Character |
+|---|---:|---|
+| 3–5 s | 0.88–0.90 | High |
+| 10–13 s | 0.81–0.86 | High |
+| 7–9 s | 0.44–0.46 | Moderate |
+| 14–15 s | 0.16 | Low |
+
+Only 14–15 s is truly low-motion, and most of the clip is fairly busy. It has the widest motion range of the 20 evaluation encodes. At the 4-frame spacing used to choose the `normal` and `high_motion` subsets, the same clip reads high throughout (0.76–0.97).
+
+### Evaluation
+
+Each method processes 79,794 model steps, so expect several hours per method on one GPU. Runs resume from `pairs/` if interrupted.
+
+```bash
+# Check the committed tables (no data or GPU needed)
+python experiments/analyze_results.py --committed
+
+# Dense B2d
+CUDA_VISIBLE_DEVICES=0 python experiments/run_dense.py --subset normal
+CUDA_VISIBLE_DEVICES=0 python experiments/run_dense.py --subset high_motion
+
+# EP-ViT
+python data/generate_codec_priors.py --eval
+CUDA_VISIBLE_DEVICES=0 python experiments/run_epvit.py --subset normal --config D_ep75 --compile
+CUDA_VISIBLE_DEVICES=0 python experiments/run_epvit.py --subset high_motion --config D_ep75 --compile
+
+# Eventful
+CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --subset normal
+CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --subset high_motion
+
+# Eventful + fused kernel
+CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --subset normal
+CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --subset high_motion
+
+# Score all four on the 189 pairs and compare with results/compiled_results.csv
+python experiments/analyze_results.py
+```
+
+Accuracy should match the committed tables. Latency depends on your GPU and host load, so compare methods within one machine, ideally side by side.
+
+To try one pair, pass a JSON list of pair ids with `--pair-ids`.
+
+### Tests
+
+```bash
+python tests/test_protocol.py            # repository checks, offline
+python tests/test_epvit.py               # EP-ViT CPU tests
+EPVIT_GPU=0 python tests/test_epvit.py   # adds GPU tests (needs checkpoint and data)
+for t in annotate baseline block_equivalence gates pipeline_adapter; do
+  CUDA_VISIBLE_DEVICES=0 python tests/eventful/test_$t.py   # Eventful tests (need checkpoint and data)
+done
+```
+
+## Main Results
+
+The full tables are in [`results/`](results/). The overall table is under [Performance](#performance). The same methods by subset:
 
 | Method | cgF1 `normal` | cgF1 `high_motion` | pHOTA `normal` | pHOTA `high_motion` | Encoder ms/frame `normal` | Encoder ms/frame `high_motion` | Speedup `normal` | Speedup `high_motion` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -53,192 +255,9 @@ The sweep values are affected by host load. EP-ViT doesn't touch the rest of the
 - cgF1 measures detection and segmentation; pHOTA also measures how well objects are tracked over time. Per-video cgF1 values are noisy, so compare the totals above, not single videos.
 - 198 pairs are attempted. 189 completed in every run and are scored; the other 9 stop on an upstream SAM 3.1 tracker bug or on GPU memory.
 
-## Installation
+## Acknowledgments
 
-Requires an NVIDIA GPU (24 GB for the full evaluation), CUDA 12.8 and `ffmpeg` with libx264 on `PATH`.
-
-```bash
-git clone https://github.com/AravindhSriramKumar/sam31-video-speedup.git
-cd sam31-video-speedup
-conda env create -f environment.yml
-conda activate sam31
-pip install -e third_party/sam3
-```
-
-Tested with Python 3.12, PyTorch 2.10.0, PyAV 19.0.2, ffmpeg 4.4.2 and CUDA 12.8. Exact package versions are in `requirements.txt`. `third_party/sam3/VENDORED.md` records the vendored SAM 3.1 commit and its local patch.
-
-## Checkpoint
-
-Both methods use the same weights. See [`checkpoints/README.md`](checkpoints/README.md) for access, download and the SHA-256. Run `python paths.py` to see which inputs are present.
-
-## Quick start: included sample
-
-`data/sample_video.mp4` is committed, so this needs only the checkpoint. It's a smoke test: it proves the code runs and reports timing, but there's **no ground truth and no accuracy score**.
-
-```bash
-python data/generate_codec_priors.py --sample
-CUDA_VISIBLE_DEVICES=0 python experiments/run_dense.py --sample
-CUDA_VISIBLE_DEVICES=0 python experiments/run_epvit.py --sample --config D_ep75 --compile
-CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --sample
-sh kernels/fused_gemm/build.sh     # once: needs the CUDA toolkit, git and network access
-CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --sample
-python experiments/render_sample.py
-```
-
-Masks and timings go to `results/runs/sample/`. Change the text prompt with `--prompt`. `render_sample.py` draws the four runs side by side in `results/sample_demo/`.
-
-### Sample results
-
-Prompt `a paw`, all four methods run back to back on one idle GPU.
-
-| Method | Encoder ms/frame | Encoder speedup | Median step ms | E2E speedup | Mask agreement with Dense | pHOTA, `sav_017083` | cgF1, `sav_017083` |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Dense | 87.9 | 1.00× | 197.1 | 1.00× | 1.000 | 30.68 | 1.80 |
-| EP-ViT 75% | 67.8 | 1.30× | 176.9 | 1.11× | 0.765 | 27.45 | 1.19 |
-| Eventful | 80.4 | 1.09× | 191.7 | 1.03× | 0.851 | 31.02 | 2.65 |
-| Eventful + fused kernel | 80.5 | 1.09× | 191.0 | 1.03× | 0.851 | 30.49 | 2.39 |
-
-- **The sample run has no ground truth,** so it gives no accuracy score of its own. pHOTA and cgF1 above come from the 17 scored evaluation pairs of the same video, `sav_017083`, in `results/per_video_results.csv`. They use other text prompts and the native frames, not the `a paw` run. One video is noisy, especially for cgF1.
-- **Mask agreement** is the mean per-frame IoU with Dense on the `a paw` run. It shows how close the masks are to Dense, not which is right.
-- **Eventful gains less here than on `normal` videos** because this clip is mostly high-motion, so most tokens are recomputed.
-
-The masks of all four methods are side by side in [`comparison.mp4`](results/sample_demo/comparison.mp4). Colours mark object ids, which differ between runs, so a paw can change colour across panels.
-
-### About the sample
-
-It is SA-V video `sav_017083`, 480×848, 24 fps, 577 frames (24 s), 6.2 MB, copied unchanged from this project's `crf23_g192` encode. It is also one of the 20 evaluation videos.
-
-Motion below is the share of 72×72 token cells whose mean absolute luma change between consecutive frames exceeds 8.
-
-| Interval | Motion | Character |
-|---|---:|---|
-| 3–5 s | 0.88–0.90 | High |
-| 10–13 s | 0.81–0.86 | High |
-| 7–9 s | 0.44–0.46 | Moderate |
-| 14–15 s | 0.16 | Low |
-
-Only 14–15 s is truly low-motion, and most of the clip is fairly busy. It has the widest motion range of the 20 evaluation encodes. At the 4-frame spacing used to choose the `normal` and `high_motion` subsets, the same clip reads high throughout (0.76–0.97).
-
-## Evaluation data
-
-```bash
-hf auth login                      # needs approved access to facebook/SACo-VEval
-bash data/download_saco_eval.sh
-```
-
-- **Annotations:** `facebook/SACo-VEval` on Hugging Face (gated, manual approval), checked against a SHA-256.
-- **Frames:** the SA-V frames hosted by Roboflow, the ready-to-use source linked from SAM 3's [VEval instructions](third_party/sam3/scripts/eval/veval/README.md). They come from `https://sa-co.roboflow.com/veval/saco_sav.zip`. This is not a Meta-hosted URL; Meta's SA-V page was unavailable when this was built.
-- **Size:** the script reads only the byte ranges of the 20 videos (2.2 GB) from the 32.6 GB archive. If the host stops honouring range requests, it downloads the whole archive instead, resumably.
-- **Re-running** skips finished videos and resumes an interrupted one.
-
-Output goes to `data/saco_sav/JPEGImages_24fps/`. Validate it at any time:
-
-```bash
-python data/prepare_saco_eval.py
-```
-
-This checks the annotation hash, the 20 video ids and order, each video's frame hash and order, the 7,616 frames fed at 24 fps, and the 198 and 189 pair counts. The expected values are in `data/eval_pairs.json`. It exits non-zero on any mismatch.
-
-## Codec priors
-
-EP-ViT needs H.264 motion vectors, residuals, intra shares and frame types on the token grid. They are generated, not stored in Git.
-
-```bash
-python data/generate_codec_priors.py --sample   # data/sample_priors/
-python data/generate_codec_priors.py --eval     # data/saco_sav/priors/, CPU only
-```
-
-The encoding is libx264, CRF 23, GOP 192, I and P frames only, one reference frame (`crf23_g192`). `_iffix` means frame types come from ffprobe, because `epvit/codec/extract.py` mislabels later I-frames under PyAV 19 and EP-ViT would then never flush on them. Use `--videos sav_017083` to process a subset.
-
-## Reproducing the results
-
-Each method processes 79,794 model steps, so expect several hours per method on one GPU. Runs resume from `pairs/` if interrupted.
-
-```bash
-# Check the committed tables (no data or GPU needed)
-python experiments/analyze_results.py --committed
-
-# Dense B2d
-CUDA_VISIBLE_DEVICES=0 python experiments/run_dense.py --subset normal
-CUDA_VISIBLE_DEVICES=0 python experiments/run_dense.py --subset high_motion
-
-# EP-ViT
-python data/generate_codec_priors.py --eval
-CUDA_VISIBLE_DEVICES=0 python experiments/run_epvit.py --subset normal --config D_ep75 --compile
-CUDA_VISIBLE_DEVICES=0 python experiments/run_epvit.py --subset high_motion --config D_ep75 --compile
-
-# Eventful
-CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --subset normal
-CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --subset high_motion
-
-# Eventful + fused kernel
-sh kernels/fused_gemm/build.sh
-CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --subset normal
-CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --subset high_motion
-
-# Score all four on the 189 pairs and compare with results/compiled_results.csv
-python experiments/analyze_results.py
-```
-
-Accuracy should match the committed tables. Latency depends on your GPU and host load, so compare methods within one machine, ideally side by side.
-
-To try one pair, pass a JSON list of pair ids with `--pair-ids`.
-
-## Eventful
-
-Eventful reuses work between frames inside the ViT trunk. A gate sits around the MLP of each block. Each frame it scores how much every token's input has changed, recomputes the K tokens that changed most, and reuses the cached output for the rest.
-
-The best configuration is `B1:mlp:k3840:lag0.6:bf16ref:torchscore:fb4608:tk:cg`:
-
-| Option | Meaning |
-|---|---|
-| `B1` | Base trunk with bf16 linear weights and compiled RoPE |
-| `mlp` | Gate the MLP only |
-| `k3840` | Start at K = 3,840 of 5,184 tokens (75%) |
-| `lag0.6` | Choose K per frame from how many tokens changed by more than 0.6 on the previous frame |
-| `bf16ref` | Keep the reference cache in bf16 |
-| `torchscore` | Score tokens with PyTorch ops, which the compiler fuses |
-| `fb4608` | Run a dense frame when K reaches 4,608 |
-| `tk` | Select the top K with a Triton kernel |
-| `cg` | Compile with CUDA graphs |
-
-The fused kernel run adds `fgfull`: one CUTLASS kernel for the two MLP GEMMs, reading and writing rows by index. `kernels/fused_gemm/` holds the kernel and `eventful/kernels/` holds its wrapper and the top-K and scoring kernels. It needs the NVIDIA CUDA toolkit, `git` and network access for the first CUTLASS download. If `nvcc` isn't on `PATH`, set `NVCC` to its full path. `ARCH` sets the target and defaults to `sm_86`. Everything else runs without it.
-
-## Tests
-
-```bash
-python tests/test_protocol.py            # repository checks, offline
-python tests/test_epvit.py               # EP-ViT CPU tests
-EPVIT_GPU=0 python tests/test_epvit.py   # adds GPU tests (needs checkpoint and data)
-for t in annotate baseline block_equivalence gates pipeline_adapter; do
-  CUDA_VISIBLE_DEVICES=0 python tests/eventful/test_$t.py   # Eventful tests (need checkpoint and data)
-done
-```
-
-## Repository layout
-
-```text
-checkpoints/          checkpoint instructions
-data/                 sample video, dataset download and validation, codec priors, frozen protocol
-epvit/                EP-ViT encoder and codec code
-eventful/             Eventful gates, controller and kernels
-experiments/          runners for each method, scoring and the sample renderer
-experiments/harness/  shared runtime, baselines, timing, sessions, scoring
-kernels/fused_gemm/   fused GEMM kernel and its build script
-report/               technical report (draft)
-results/              dense/, epvit/, eventful/, eventful_fused/, tables, sample_demo/; new runs go to results/runs/ (git-ignored)
-tests/                tests
-third_party/sam3/     vendored SAM 3.1
-```
-
-## References
-
-- Carion et al., *SAM 3: Segment Anything with Concepts*, Meta. [Code](https://github.com/facebookresearch/sam3)
-- Qiu et al., *EP-ViT: Leveraging Encoding Priors to Eliminate Spatio-Temporal Redundancy in Vision Transformer*, ECAI 2025.
-- Dutson et al., *Eventful Transformers: Leveraging Temporal Redundancy in Vision Transformers*, ICCV 2023. [Code](https://github.com/WISION-Lab/eventful-transformer)
-- Ravi et al., *Segment Anything in Images and Videos* (SAM 2, SA-V dataset), Meta.
-
-## Licences and acknowledgements
+This project builds on [SAM 3](https://github.com/facebookresearch/sam3) (Carion et al., Meta), the SA-V dataset (Ravi et al., Meta), EP-ViT (Qiu et al., ECAI 2025) and [Eventful Transformers](https://github.com/WISION-Lab/eventful-transformer) (Dutson et al., ICCV 2023).
 
 This project uses SAM 3.1 (SAM Materials). `third_party/sam3` and the checkpoint are covered by the SAM License in `third_party/sam3/LICENSE`.
 

@@ -1,6 +1,6 @@
 # Checkpoint
 
-Dense B2d and EP-ViT use the same file, and EP-ViT has no trained weights of its own. It is not stored in this repository.
+Dense, EP-ViT, Eventful and Eventful + fused all use the same file. None of them has trained weights of its own. It is not stored in this repository.
 
 | | |
 |---|---|

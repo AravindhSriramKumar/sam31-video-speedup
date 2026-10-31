@@ -12,21 +12,21 @@ SAM 3.1 re-encodes every video frame with a large Vision Transformer, even when 
 
 SA-Co/VEval SA-V val, 20 videos at 24 fps, 189 (video, noun phrase) pairs, official evaluator. Measured on an NVIDIA RTX A5000 (24 GB). The full tables are in [`results/`](results/).
 
-| Method | pHOTA | ΔpHOTA | Encoder ms/frame | Encoder speedup | Trunk TMAC/frame |
-|---|---:|---:|---:|---:|---:|
-| Dense SAM 3.1 (B2d, compiled) | 48.88 | 0 | 89.9 | 1.00× | 2.699 |
-| EP-ViT 75% (`D_ep75`, compiled) | 48.27 | −0.61 | 68.3 | 1.32× | 2.052 |
-| Eventful | 48.97 | +0.09 | 75.5 | 1.19× | not logged |
-| Eventful + fused kernel | 48.57 | −0.32 | 75.2 | 1.20× | not logged |
+| Method | cgF1 | ΔcgF1 | pHOTA | ΔpHOTA | Encoder ms/frame | Encoder speedup | Trunk TMAC/frame |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Dense SAM 3.1 (B2d, compiled) | 12.41 | 0 | 48.88 | 0 | 89.9 | 1.00× | 2.699 |
+| EP-ViT 75% (`D_ep75`, compiled) | 12.26 | −0.16 | 48.27 | −0.61 | 68.3 | 1.32× | 2.052 |
+| Eventful | 12.27 | −0.15 | 48.97 | +0.09 | 75.5 | 1.19× | not logged |
+| Eventful + fused kernel | 11.55 | −0.86 | 48.57 | −0.32 | 75.2 | 1.20× | not logged |
 
 The same methods by subset:
 
-| Method | pHOTA `normal` | pHOTA `high_motion` | Encoder ms/frame `normal` | Encoder ms/frame `high_motion` | Speedup `normal` | Speedup `high_motion` |
-|---|---:|---:|---:|---:|---:|---:|
-| Dense | 55.45 | 38.35 | 89.4 | 90.2 | 1.00× | 1.00× |
-| EP-ViT 75% | 54.25 | 38.88 | 68.5 | 68.2 | 1.31× | 1.32× |
-| Eventful | 55.38 | 38.61 | 57.8 | 85.9 | 1.55× | 1.05× |
-| Eventful + fused kernel | 55.35 | 37.80 | 58.4 | 85.0 | 1.53× | 1.06× |
+| Method | cgF1 `normal` | cgF1 `high_motion` | pHOTA `normal` | pHOTA `high_motion` | Encoder ms/frame `normal` | Encoder ms/frame `high_motion` | Speedup `normal` | Speedup `high_motion` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Dense | 15.43 | 11.00 | 55.45 | 38.35 | 89.4 | 90.2 | 1.00× | 1.00× |
+| EP-ViT 75% | 14.63 | 11.11 | 54.25 | 38.88 | 68.5 | 68.2 | 1.31× | 1.32× |
+| Eventful | 15.61 | 10.78 | 55.38 | 38.61 | 57.8 | 85.9 | 1.55× | 1.05× |
+| Eventful + fused kernel | 14.78 | 9.96 | 55.35 | 37.80 | 58.4 | 85.0 | 1.53× | 1.06× |
 
 ### End-to-end latency
 
@@ -50,7 +50,7 @@ The sweep values are affected by host load. EP-ViT doesn't touch the rest of the
 - `D_ep75` is reported because it has the best balance of accuracy and speed among the EP-ViT configurations with controlled E2E data.
 - The fused kernel saves about 0.2 ms per frame in the trunk benchmark (74.7 → 74.5 ms). Reading rows by index slows `fc1` by about 10%, which cancels the copies it removes. So plain Eventful stays the best configuration.
 - Accuracy differences this small may be noise. No significance testing was run on the 189-pair differences above.
-- cgF1 is in the tables, but per-video values are noisy, so pHOTA is the main accuracy measure.
+- cgF1 measures detection and segmentation; pHOTA also measures how well objects are tracked over time. Per-video cgF1 values are noisy, so compare the totals above, not single videos.
 - 198 pairs are attempted. 189 completed in every run and are scored; the other 9 stop on an upstream SAM 3.1 tracker bug or on GPU memory.
 
 ## Installation

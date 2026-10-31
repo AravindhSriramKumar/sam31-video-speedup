@@ -4,7 +4,7 @@ Authors: Aravindh Sriram Kumar and Shaik Sadik. CS6886, IIT Madras.
 
 ## Introduction
 
-This repository contains the code, evaluation protocol and results for our course project on making SAM 3.1 video inference faster. The write-up is in the [technical report](report/SAM31_Technical_Report.pdf) (draft).
+This repository contains the code, evaluation protocol and results for our course project on making SAM 3.1 video inference faster.
 
 It includes four methods, each at its best configuration: dense SAM 3.1, EP-ViT, Eventful, and Eventful with a fused kernel.
 

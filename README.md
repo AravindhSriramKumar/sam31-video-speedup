@@ -144,10 +144,9 @@ CUDA_VISIBLE_DEVICES=0 python experiments/run_dense.py --sample
 CUDA_VISIBLE_DEVICES=0 python experiments/run_epvit.py --sample --config D_ep75 --compile
 CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --sample
 CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --sample
-python experiments/render_sample.py
 ```
 
-Masks and timings go to `results/runs/sample/`. Change the text prompt with `--prompt`. `render_sample.py` draws the four runs side by side in `results/sample_demo/`.
+Masks and timings go to `results/runs/sample/`. Change the text prompt with `--prompt`.
 
 Results for the prompt `a paw`, with all four methods run back to back on one idle GPU:
 
@@ -162,7 +161,7 @@ Results for the prompt `a paw`, with all four methods run back to back on one id
 - **Mask agreement** is the mean per-frame IoU with Dense on the `a paw` run. It shows how close the masks are to Dense, not which is right.
 - **Eventful gains less here than on `normal` videos** because this clip is mostly high-motion, so most tokens are recomputed.
 
-The masks of all four methods are side by side in [`comparison.mp4`](results/sample_demo/comparison.mp4). Colours mark object ids, which differ between runs, so a paw can change colour across panels.
+`results/sample_demo/` holds the saved table and video from this run. The masks of all four methods are side by side in [`comparison.mp4`](results/sample_demo/comparison.mp4). Colours mark object ids, which differ between runs, so a paw can change colour across panels.
 
 The sample is SA-V video `sav_017083`, 480×848, 24 fps, 577 frames (24 s), 6.2 MB, copied unchanged from this project's `crf23_g192` encode. It is also one of the 20 evaluation videos. Motion below is the share of 72×72 token cells whose mean absolute luma change between consecutive frames exceeds 8.
 

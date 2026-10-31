@@ -20,4 +20,3 @@ scikit-image==0.25.2
 huggingface_hub==1.32.0
 triton==3.6.0
 opencv-python==4.11.0.86
-matplotlib==3.11.2

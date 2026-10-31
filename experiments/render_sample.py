@@ -2,8 +2,7 @@
 
     python experiments/render_sample.py
 
-Reads results/runs/sample/*.json and writes results/sample_demo/: comparison.mp4 (2 x 2 grid), contact_sheet.png (one
-row per motion level) and sample_results.csv. The sample has no ground truth: this shows the methods run and how their
+Reads results/runs/sample/*.json and writes results/sample_demo/: comparison.mp4 (2 x 2 grid) and sample_results.csv. The sample has no ground truth: this shows the methods run and how their
 masks compare, not which is more accurate.
 """
 import csv
@@ -21,7 +20,6 @@ from pycocotools import mask as mask_utils  # noqa: E402
 import paths  # noqa: E402
 
 METHODS = {"dense_B2d": "Dense", "epvit_D_ep75_c": "EP-ViT", "eventful": "Eventful", "eventful_fused": "Eventful + fused"}
-MOMENTS = {96: "4 s, high motion", 192: "8 s, moderate motion", 348: "14.5 s, low motion"}
 PANEL = (640, 362)
 OUT = paths.RESULTS / "sample_demo"
 
@@ -85,12 +83,6 @@ def main():
 
     folder = paths.SAMPLE_FRAMES
     n = runs["dense_B2d"]["frames_yielded"]
-    sheet = []
-    for frame, moment in MOMENTS.items():
-        image = cv2.imread(str(folder / f"{frame}.jpg"))
-        sheet.append(np.hstack([panel(image, runs[m]["predictions"], frame, f"{label}: {moment}") for m, label in METHODS.items()]))
-    cv2.imwrite(str(OUT / "contact_sheet.png"), np.vstack(sheet))
-
     h, w = PANEL[1] * 2, PANEL[0] * 2
     ff = subprocess.Popen(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{w}x{h}",
                            "-r", "24", "-i", "-", "-c:v", "libx264", "-crf", "30", "-preset", "slow", "-pix_fmt", "yuv420p",

@@ -46,6 +46,24 @@ def panel(image, preds, frame, title):
     return out
 
 
+def agreement(preds, ref):
+    """Mean per-frame IoU of the union of all masks against `ref`, on frames where either run predicts something."""
+    def union(ps, frame):
+        rles = [p["segmentations"][frame] for p in ps if p["segmentations"][frame] is not None]
+        return mask_utils.merge(rles) if rles else None
+
+    ious = []
+    for frame in range(len(ref[0]["segmentations"])):
+        a, b = union(preds, frame), union(ref, frame)
+        if a is None and b is None:
+            continue
+        if a is None or b is None:
+            ious.append(0.0)
+        else:
+            ious.append(float(mask_utils.iou([a], [b], [0])[0, 0]))
+    return float(np.mean(ious))
+
+
 def main():
     runs = {}
     for name in METHODS:
@@ -54,14 +72,16 @@ def main():
             raise SystemExit(f"missing {f}: run the --sample commands first")
         runs[name] = json.loads(f.read_text())
     OUT.mkdir(parents=True, exist_ok=True)
-    dense_trunk = runs["dense_B2d"]["trunk_ms_per_frame"]
+    dense = runs["dense_B2d"]
     with open(OUT / "sample_results.csv", "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["method", "prompt", "frames", "objects", "trunk_ms_per_frame", "trunk_speedup", "step_ms_median"])
+        w.writerow(["method", "prompt", "frames", "objects", "trunk_ms_per_frame", "trunk_speedup", "step_ms_median", "step_speedup", "iou_vs_dense"])
         for name, label in METHODS.items():
             r = runs[name]
             w.writerow([label, r["prompt"], r["frames_yielded"], len(r["predictions"]), round(r["trunk_ms_per_frame"], 1),
-                        round(dense_trunk / r["trunk_ms_per_frame"], 2), round(r["step_ms_median"], 1)])
+                        round(dense["trunk_ms_per_frame"] / r["trunk_ms_per_frame"], 2), round(r["step_ms_median"], 1),
+                        round(dense["step_ms_median"] / r["step_ms_median"], 2),
+                        round(agreement(r["predictions"], dense["predictions"]), 3)])
 
     folder = paths.SAMPLE_FRAMES
     n = runs["dense_B2d"]["frames_yielded"]

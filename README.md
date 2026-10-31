@@ -19,6 +19,8 @@ SA-Co/VEval SA-V val, 20 videos at 24 fps, 189 (video, noun phrase) pairs, offic
 | Eventful | 12.27 | −0.15 | 48.97 | +0.09 | 75.5 | 1.19× | not logged |
 | Eventful + fused kernel | 11.55 | −0.86 | 48.57 | −0.32 | 75.2 | 1.20× | not logged |
 
+![Accuracy and speed of the four methods on all evaluation videos](results/figures/all_videos.png)
+
 The same methods by subset:
 
 | Method | cgF1 `normal` | cgF1 `high_motion` | pHOTA `normal` | pHOTA `high_motion` | Encoder ms/frame `normal` | Encoder ms/frame `high_motion` | Speedup `normal` | Speedup `high_motion` |
@@ -83,9 +85,31 @@ CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --sample
 sh kernels/fused_gemm/build.sh     # once: needs the CUDA toolkit, git and network access
 CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --sample
 python experiments/render_sample.py
+python experiments/plot_results.py
 ```
 
-Masks and timings go to `results/runs/sample/`. Change the text prompt with `--prompt`. `render_sample.py` draws the four runs side by side in `results/sample_demo/`.
+Masks and timings go to `results/runs/sample/`. Change the text prompt with `--prompt`. `render_sample.py` draws the four runs side by side in `results/sample_demo/`, and `plot_results.py` writes the bar charts to `results/figures/`.
+
+### Sample results
+
+Prompt `a paw`, all four methods run back to back on one idle GPU.
+
+| Method | Encoder ms/frame | Encoder speedup | Median step ms | E2E speedup | Mask agreement with Dense | pHOTA, `sav_017083` | cgF1, `sav_017083` |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Dense | 87.9 | 1.00× | 197.1 | 1.00× | 1.000 | 30.68 | 1.80 |
+| EP-ViT 75% | 67.8 | 1.30× | 176.9 | 1.11× | 0.765 | 27.45 | 1.19 |
+| Eventful | 80.4 | 1.09× | 191.7 | 1.03× | 0.851 | 31.02 | 2.65 |
+| Eventful + fused kernel | 80.5 | 1.09× | 191.0 | 1.03× | 0.851 | 30.49 | 2.39 |
+
+![Speed and accuracy of the four methods on the sample video](results/figures/sample_video.png)
+
+- **The sample run has no ground truth,** so it gives no accuracy score of its own. pHOTA and cgF1 above come from the 17 scored evaluation pairs of the same video, `sav_017083`, in `results/per_video_results.csv`. They use other text prompts and the native frames, not the `a paw` run. One video is noisy, especially for cgF1.
+- **Mask agreement** is the mean per-frame IoU with Dense on the `a paw` run. It shows how close the masks are to Dense, not which is right.
+- **Eventful gains less here than on `normal` videos** because this clip is mostly high-motion, so most tokens are recomputed.
+
+Masks from the four methods at three motion levels are in [`contact_sheet.png`](results/sample_demo/contact_sheet.png), and the full clip is in [`comparison.mp4`](results/sample_demo/comparison.mp4). Colours mark object ids, which differ between runs, so a paw can change colour across panels.
+
+![Masks of the four methods at three motion levels](results/sample_demo/contact_sheet.png)
 
 ### About the sample
 
@@ -205,11 +229,11 @@ checkpoints/          checkpoint instructions
 data/                 sample video, dataset download and validation, codec priors, frozen protocol
 epvit/                EP-ViT encoder and codec code
 eventful/             Eventful gates, controller and kernels
-experiments/          runners for each method, scoring and the sample renderer
+experiments/          runners for each method, scoring, the sample renderer and the charts
 experiments/harness/  shared runtime, baselines, timing, sessions, scoring
 kernels/fused_gemm/   fused GEMM kernel and its build script
 report/               technical report (draft)
-results/              dense/, epvit/, eventful/, eventful_fused/, tables, sample_demo/; new runs go to results/runs/ (git-ignored)
+results/              dense/, epvit/, eventful/, eventful_fused/, tables, figures/, sample_demo/; new runs go to results/runs/ (git-ignored)
 tests/                tests
 third_party/sam3/     vendored SAM 3.1
 ```

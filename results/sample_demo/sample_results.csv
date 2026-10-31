@@ -1,0 +1,5 @@
+method,prompt,frames,objects,trunk_ms_per_frame,trunk_speedup,step_ms_median,step_speedup,iou_vs_dense
+Dense,a paw,577,14,87.9,1.0,197.1,1.0,1.0
+EP-ViT,a paw,577,14,67.8,1.3,176.9,1.11,0.765
+Eventful,a paw,577,13,80.4,1.09,191.7,1.03,0.851
+Eventful + fused,a paw,577,13,80.5,1.09,191.0,1.03,0.851

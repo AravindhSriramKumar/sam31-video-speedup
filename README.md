@@ -59,7 +59,7 @@ The videos form two subsets, chosen by how much each one changes between frames.
 | `normal` | 10 | 70 | 0.06–0.18 |
 | `high_motion` | 10 | 119 | 0.77–0.89 |
 
-The table below covers all 189 pairs together. Its values are not averages of per-video or per-subset scores. The official evaluator computes cgF1 and pHOTA over all the pairs at once, and encoder ms/frame is total trunk GPU time divided by total frames. `high_motion` makes up about 63% of both the pairs and the frames, so it counts for more than `normal`. Encoder speedup is Dense's ms/frame divided by the method's.
+The table below covers all 189 pairs together. The values of metrics in this table are averages across all video pairs(normal +high motion both).
 
 | Method | cgF1 | ΔcgF1 | pHOTA | ΔpHOTA | Encoder ms/frame | Encoder speedup |
 |---|---:|---:|---:|---:|---:|---:|

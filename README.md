@@ -50,7 +50,16 @@ SAM 3.1 re-encodes every video frame with a large Vision Transformer, even when 
 
 ### Performance
 
-SA-Co/VEval SA-V val, 20 videos at 24 fps, 189 (video, noun phrase) pairs, official evaluator. Measured on an NVIDIA RTX A5000 (24 GB).
+We evaluate on 20 SA-V validation videos from SA-Co/VEval at 24 fps, on an NVIDIA RTX A5000 (24 GB). One evaluation pair is one video with one noun phrase prompt.
+
+The videos form two subsets, chosen by how much each one changes between frames. Motion is the share of cells on the 72×72 token grid whose mean absolute pixel change between consecutive annotated frames exceeds 8.
+
+| Subset | Videos | Scored pairs | Motion |
+|---|---:|---:|---:|
+| `normal` | 10 | 70 | 0.06–0.18 |
+| `high_motion` | 10 | 119 | 0.77–0.89 |
+
+The table below covers all 189 pairs together. Its values are not averages of per-video or per-subset scores. The official evaluator computes cgF1 and pHOTA over all the pairs at once, and encoder ms/frame is total trunk GPU time divided by total frames. `high_motion` makes up about 63% of both the pairs and the frames, so it counts for more than `normal`. Encoder speedup is Dense's ms/frame divided by the method's.
 
 | Method | cgF1 | ΔcgF1 | pHOTA | ΔpHOTA | Encoder ms/frame | Encoder speedup |
 |---|---:|---:|---:|---:|---:|---:|
@@ -60,7 +69,9 @@ SA-Co/VEval SA-V val, 20 videos at 24 fps, 189 (video, noun phrase) pairs, offic
 | Eventful (MLP gate only) | 12.27 | −0.15 | 48.97 | +0.09 | 75.5 | 1.19× |
 | Eventful + fused kernel (MLP gate only) | 11.55 | −0.86 | 48.57 | −0.32 | 75.2 | 1.20× |
 
-Eventful three gates matches EP-ViT's overall encoder speedup and is the fastest method on `normal` videos, but it is the least accurate of the five. Eventful (MLP gate only) stays closest to dense. See [Main Results](#main-results) for subsets and end-to-end latency.
+Across all 20 videos, Eventful three gates matches EP-ViT's encoder speedup but has the lowest accuracy of the five, and Eventful (MLP gate only) stays closest to dense.
+
+These overall values hide a large difference between the subsets. EP-ViT speeds up both by about the same amount, while Eventful's speedup depends on motion: three gates reaches 1.90× on `normal`, the fastest of any method, but only 1.11× on `high_motion`. On single videos it ranges from 0.97× to 2.23×. [Main Results](#main-results) gives each subset separately, along with end-to-end latency.
 
 ---
 
@@ -217,7 +228,7 @@ To try one pair, pass a JSON list of pair ids with `--pair-ids`.
 
 ## Main Results
 
-The full tables are in [`results/`](results/). The overall table is under [Performance](#performance). The same methods by subset:
+The full tables are in [`results/`](results/). The overall table is under [Performance](#performance). The same methods, scored separately on each subset:
 
 | Method | cgF1 `normal` | cgF1 `high_motion` | pHOTA `normal` | pHOTA `high_motion` | Encoder ms/frame `normal` | Encoder ms/frame `high_motion` | Speedup `normal` | Speedup `high_motion` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|

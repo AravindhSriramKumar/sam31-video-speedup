@@ -50,12 +50,12 @@ SAM 3.1 re-encodes every video frame with a large Vision Transformer, even when 
 
 SA-Co/VEval SA-V val, 20 videos at 24 fps, 189 (video, noun phrase) pairs, official evaluator. Measured on an NVIDIA RTX A5000 (24 GB).
 
-| Method | cgF1 | ΔcgF1 | pHOTA | ΔpHOTA | Encoder ms/frame | Encoder speedup | Trunk TMAC/frame |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Dense SAM 3.1 (B2d, compiled) | 12.41 | 0 | 48.88 | 0 | 89.9 | 1.00× | 2.699 |
-| EP-ViT 75% (`D_ep75`, compiled) | 12.26 | −0.16 | 48.27 | −0.61 | 68.3 | 1.32× | 2.052 |
-| Eventful | 12.27 | −0.15 | 48.97 | +0.09 | 75.5 | 1.19× | not logged |
-| Eventful + fused kernel | 11.55 | −0.86 | 48.57 | −0.32 | 75.2 | 1.20× | not logged |
+| Method | cgF1 | ΔcgF1 | pHOTA | ΔpHOTA | Encoder ms/frame | Encoder speedup |
+|---|---:|---:|---:|---:|---:|---:|
+| Dense SAM 3.1 (B2d, compiled) | 12.41 | 0 | 48.88 | 0 | 89.9 | 1.00× |
+| EP-ViT 75% (`D_ep75`, compiled) | 12.26 | −0.16 | 48.27 | −0.61 | 68.3 | 1.32× |
+| Eventful | 12.27 | −0.15 | 48.97 | +0.09 | 75.5 | 1.19× |
+| Eventful + fused kernel | 11.55 | −0.86 | 48.57 | −0.32 | 75.2 | 1.20× |
 
 EP-ViT has the largest overall encoder speedup. Eventful stays closest to dense and is the fastest on `normal` videos. See [Main Results](#main-results) for subsets and end-to-end latency.
 

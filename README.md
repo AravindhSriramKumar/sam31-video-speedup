@@ -164,16 +164,15 @@ Masks and timings go to `results/runs/sample/`. Change the text prompt with `--p
 
 Results for the prompt `a paw`, with the four original runs back to back on one idle GPU and three gates measured later against a fresh Dense run on one idle GPU (87.5 ms encoder, 195.1 ms step, the baseline for its row):
 
-| Method | Encoder ms/frame | Encoder speedup | Median step ms | E2E speedup | Mask agreement with Dense | pHOTA, `sav_017083` | cgF1, `sav_017083` |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Dense | 87.9 | 1.00× | 197.1 | 1.00× | 1.000 | 30.68 | 1.80 |
-| EP-ViT 75% | 67.8 | 1.30× | 176.9 | 1.11× | 0.765 | 27.45 | 1.19 |
-| Eventful three gates| 74.7 | 1.17× | 185.2 | 1.05× | 0.701 | 29.70 | 2.72 |
-| Eventful (MLP gate only) | 80.4 | 1.09× | 191.7 | 1.03× | 0.851 | 31.02 | 2.65 |
-| Eventful + fused kernel (MLP gate only) | 80.5 | 1.09× | 191.0 | 1.03× | 0.851 | 30.49 | 2.39 |
+| Method | Encoder ms/frame | Encoder speedup | Median step ms | E2E speedup | pHOTA, `sav_017083` | cgF1, `sav_017083` |
+|---|---:|---:|---:|---:|---:|---:|
+| Dense | 87.9 | 1.00× | 197.1 | 1.00× | 30.68 | 1.80 |
+| EP-ViT 75% | 67.8 | 1.30× | 176.9 | 1.11× | 27.45 | 1.19 |
+| Eventful three gates| 74.7 | 1.17× | 185.2 | 1.05× | 29.70 | 2.72 |
+| Eventful (MLP gate only) | 80.4 | 1.09× | 191.7 | 1.03× | 31.02 | 2.65 |
+| Eventful + fused kernel (MLP gate only) | 80.5 | 1.09× | 191.0 | 1.03× | 30.49 | 2.39 |
 
 - **The sample run has no ground truth,** so it gives no accuracy score of its own. pHOTA and cgF1 above come from the 17 scored evaluation pairs of the same video, `sav_017083`, in `results/per_video_results.csv`. They use other text prompts and the native frames, not the `a paw` run. One video is noisy, especially for cgF1.
-- **Mask agreement** is the mean per-frame IoU with Dense on the `a paw` run. It shows how close the masks are to Dense, not which is right.
 - **Eventful gains less here than on `normal` videos** because this clip is mostly high-motion, so most tokens are recomputed.
 
 `results/sample_demo/` holds the saved table and video from this run. The masks of all five methods are side by side in [`comparison.mp4`](results/sample_demo/comparison.mp4). Colours mark object ids, which differ between runs, so a paw can change colour across panels.

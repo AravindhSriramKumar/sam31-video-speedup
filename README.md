@@ -164,7 +164,7 @@ Masks and timings go to `results/runs/sample/`. Change the text prompt with `--p
 
 Results for the prompt `a paw`, with the runs back to back on one idle GPU:
 
-| Method | Encoder ms/frame | Encoder speedup | Median step ms | E2E speedup |
+| Method | Encoder ms/frame | Encoder speedup | E2E step ms | E2E speedup |
 |---|---:|---:|---:|---:|
 | Dense | 87.9 | 1.00× | 197.1 | 1.00× |
 | EP-ViT 75% | 67.8 | 1.30× | 176.9 | 1.11× |

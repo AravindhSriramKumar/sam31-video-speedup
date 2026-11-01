@@ -1,5 +1,7 @@
 # Checkpoint
 
+Download location and instructions for the SAM 3.1 weights.
+
 Dense, EP-ViT, Eventful and Eventful + fused all use the same file. None of them has trained weights of its own. It is not stored in this repository.
 
 | | |

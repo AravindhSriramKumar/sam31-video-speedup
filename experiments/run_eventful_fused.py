@@ -5,7 +5,7 @@
     CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --subset normal
     CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --subset high_motion
 
-The best Eventful configuration of run_eventful.py, with fc1 reading and fc2 writing rows by index inside the kernel
+The MLP-only Eventful configuration of run_eventful.py, with fc1 reading and fc2 writing rows by index inside the kernel
 (`fgfull`). Full runs write results/runs/eventful_fused/<subset>__<spec>__gb1_pp1__adapter__24fps/.
 """
 import sys

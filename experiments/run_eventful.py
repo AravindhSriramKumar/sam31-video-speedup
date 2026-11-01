@@ -1,10 +1,10 @@
-"""Eventful SAM 3.1 (best configuration) on the 24 fps protocol, or on the included sample.
+"""Eventful SAM 3.1 with the MLP gate only on the 24 fps protocol, or on the included sample.
 
     CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --sample
     CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --subset normal
     CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful.py --subset high_motion
 
-Best configuration: MLP gate only, K per frame from the previous frame's change (K0 = 3840, tau = 0.6, buckets of 512),
+Configuration: MLP gate only, K per frame from the previous frame's change (K0 = 3840, tau = 0.6, buckets of 512),
 dense fallback at K = 4608, bf16 reference cache, Triton top-K, compiled with CUDA graphs. eventful/config.py explains
 each option. Full runs write results/runs/eventful/<subset>__<spec>__gb1_pp1__adapter__24fps/ and resume from its pairs/.
 """

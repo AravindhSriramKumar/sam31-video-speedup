@@ -1,5 +1,5 @@
-"""Score Dense B2d, EP-ViT D_ep75, Eventful and Eventful + fused on the 189 frozen pairs and compare, or check the
-committed tables.
+"""Score Dense B2d, EP-ViT D_ep75, Eventful, Eventful + fused and Eventful three gates on the 189 frozen pairs and compare,
+or check the committed tables.
 
     python experiments/analyze_results.py --committed      # offline: internal checks of results/ (no data needed)
     python experiments/analyze_results.py                  # re-score full runs in results/runs/ (needs annotations)
@@ -28,8 +28,10 @@ from data import saco_data  # noqa: E402
 ENC = "crf23_g192_iffix"
 DENSE_TMAC = 2.699287068672
 SUBSETS = ("normal", "high_motion")
-LABELS = {"B2d": "Dense SAM 3.1 (B2d, compiled)", "D_ep75": "EP-ViT 75%", "eventful": "Eventful", "eventful_fused": "Eventful + fused kernel"}
+LABELS = {"B2d": "Dense SAM 3.1 (B2d, compiled)", "D_ep75": "EP-ViT 75%", "eventful": "Eventful", "eventful_fused": "Eventful + fused kernel",
+          "eventful_three_gates": "Eventful three gates"}
 EVENTFUL_TAG = "B1_mlp_k3840_lag0.6_bf16ref_torchscore_fb4608"
+THREE_GATES_TAG = "B1_mlp+qkv+proj_k3840_lag0.6_bf16ref_torchscore_fb4608"
 COMMITTED = paths.RESULTS / "compiled_results.csv"
 COMMITTED_VIDEOS = paths.RESULTS / "per_video_results.csv"
 COMPARED = ("pHOTA", "cgF1", "enc_ms_per_frame", "e2e_ms_median", "tmac_per_frame")
@@ -114,7 +116,7 @@ def check_committed():
                                                                "e2e_speedup", "e2e_mean_speedup", "rest_of_step_ms")]))
     for c in ("dpHOTA", "enc_speedup", "e2e_speedup"):
         check(np.allclose(d[c], df[c]), f"{c} follows from the measured columns")
-    for folder in ("dense", "epvit", "eventful", "eventful_fused"):
+    for folder in ("dense", "epvit", "eventful", "eventful_fused", "eventful_three_gates"):
         for s in SUBSETS:
             S = json.loads((paths.RESULTS / folder / s / "summary.json").read_text())
             M = json.loads((paths.RESULTS / folder / s / "metrics.json").read_text())
@@ -134,6 +136,7 @@ def main():
     ap.add_argument("--epvit-root", default=paths.RUNS / "epvit", type=Path)
     ap.add_argument("--eventful-root", default=paths.RUNS / "eventful", type=Path)
     ap.add_argument("--fused-root", default=paths.RUNS / "eventful_fused", type=Path)
+    ap.add_argument("--three-gates-root", default=paths.RUNS / "eventful_three_gates", type=Path)
     ap.add_argument("--out", default=paths.RUNS / "analysis", type=Path)
     ap.add_argument("--workers", type=int, default=2)
     a = ap.parse_args()
@@ -147,6 +150,7 @@ def main():
         recs["D_ep75", s] = load_pairs(a.epvit_root / f"{s}__D_ep75_c__{ENC}__24fps", frozen[s])
         recs["eventful", s] = load_pairs(a.eventful_root / f"{s}__{EVENTFUL_TAG}_tk_cg__gb1_pp1__adapter__24fps", frozen[s])
         recs["eventful_fused", s] = load_pairs(a.fused_root / f"{s}__{EVENTFUL_TAG}_tk_fgfull_cg__gb1_pp1__adapter__24fps", frozen[s])
+        recs["eventful_three_gates", s] = load_pairs(a.three_gates_root / f"{s}__{THREE_GATES_TAG}_tk_cg__gb1_pp1__adapter__24fps", frozen[s])
     scopes = {"all20": SUBSETS, "normal": ("normal",), "high_motion": ("high_motion",)}
     keys, jobs = [], []
     for r in LABELS:

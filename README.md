@@ -229,22 +229,19 @@ The full tables are in [`results/`](results/). The overall table is under [Perfo
 
 ### End-to-end latency
 
-End-to-end (E2E) is the median per-frame model step. 
-
-| Measurement | Scope | Dense ms | Method ms | E2E speedup
-|---|---|---:|---:|---:|---|
-| EP-ViT | 189 pairs | 175.0 | 137.8 | 1.27× 
-| Eventful three gates| 189 pairs | 175.0 | 144.2 | 1.21× 
-| Eventful (MLP gate only) | 189 pairs | 175.0 | 158.1 | 1.11×  
-| Eventful + fused kernel (MLP gate only) | 189 pairs | 175.0 | 155.2 | 1.13×
-
+| Measurement | Scope | Dense ms | Method ms | E2E speedup |
+|---|---|---:|---:|---:|
+| EP-ViT | 189 pairs | 175.0 | 137.8 | 1.27× |
+| Eventful three gates | 189 pairs | 175.0 | 144.2 | 1.21× |
+| Eventful (MLP gate only) | 189 pairs | 175.0 | 158.1 | 1.11× |
+| Eventful + fused kernel (MLP gate only) | 189 pairs | 175.0 | 155.2 | 1.13× |
 
 ### Reading these numbers
 
-- **EP-ViT** gives the same speedup on every video and loses a little accuracy on `normal`. **Eventful three gates** is the fastest method on `normal` videos and matches EP-ViT's overall encoder speed, but has the lowest accuracy of the five: 1.02 cgF1 and 1.49 pHOTA below Eventful (MLP gate only). **Eventful (MLP gate only)** stays closest to dense. Both Eventful configurations gain little on `high_motion`, where most tokens change.
-- `D_ep75` is reported because it has the best balance of accuracy and speed among the EP-ViT configurations with controlled E2E data.
+- **EP-ViT** gives about the same speedup on every video and loses a little accuracy on `normal`. **Eventful three gates** is the fastest method on `normal` videos and matches EP-ViT's overall encoder speed, but has the lowest accuracy of the five: 1.02 cgF1 and 1.49 pHOTA below Eventful (MLP gate only). **Eventful (MLP gate only)** stays closest to dense. All the Eventful runs gain little on `high_motion`, where most tokens change.
+- `D_ep75` is reported because it has the best balance of accuracy and speed among the EP-ViT configurations with side-by-side E2E data.
 - The fused kernel saves about 0.2 ms per frame in the trunk benchmark (74.7 → 74.5 ms). Reading rows by index slows `fc1` by about 10%, which cancels the copies it removes. So the fused kernel doesn't beat the MLP-only configuration, and it wasn't measured with three gates.
-- Accuracy differences this small may be noise. The one significance test run is a paired bootstrap (200 draws) of three gates against MLP-only, saved in `results/eventful_three_gates/`. Only the `normal` pHOTA loss is outside noise (−1.85, 95% interval −3.65 to −0.23); the `normal` cgF1 and both `high_motion` intervals include zero. No other differences above were tested.
+- Accuracy differences this small may be noise. The one significance test run is a paired bootstrap (200 draws) of three gates against MLP-only, saved in `results/eventful_three_gates/`. Of cgF1 and pHOTA, only the `normal` pHOTA loss is outside noise (−1.85, 95% interval −3.65 to −0.23); the `normal` cgF1 and both `high_motion` intervals include zero. No other differences above were tested.
 - cgF1 measures detection and segmentation; pHOTA also measures how well objects are tracked over time. Per-video cgF1 values are noisy, so compare the totals above, not single videos.
 - 198 pairs are attempted. 189 completed in every run and are scored; the other 9 stop on an upstream SAM 3.1 tracker bug or on GPU memory.
 

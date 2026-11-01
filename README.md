@@ -162,7 +162,7 @@ CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --sample
 
 Masks and timings go to `results/runs/sample/`. Change the text prompt with `--prompt`.
 
-Results for the prompt `a paw`, with the four original runs back to back on one idle GPU and three gates measured later against a fresh Dense run on one idle GPU (87.5 ms encoder, 195.1 ms step, the baseline for its row):
+Results for the prompt `a paw`, with the runs back to back on one idle GPU:
 
 | Method | Encoder ms/frame | Encoder speedup | Median step ms | E2E speedup | pHOTA, `sav_017083` | cgF1, `sav_017083` |
 |---|---:|---:|---:|---:|---:|---:|

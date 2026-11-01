@@ -176,16 +176,7 @@ Results for the prompt `a paw`, with the runs back to back on one idle GPU:
 
 `results/sample_demo/` holds the saved table and video from this run. The masks of all five methods are side by side in [`comparison.mp4`](results/sample_demo/comparison.mp4). Colours mark object ids, which differ between runs, so a paw can change colour across panels.
 
-The sample is SA-V video `sav_017083`, 480×848, 24 fps, 577 frames (24 s), 6.2 MB, copied unchanged from this project's `crf23_g192` encode. It is also one of the 20 evaluation videos. Motion below is the share of 72×72 token cells whose mean absolute luma change between consecutive frames exceeds 8.
-
-| Interval | Motion | Character |
-|---|---:|---|
-| 3–5 s | 0.88–0.90 | High |
-| 10–13 s | 0.81–0.86 | High |
-| 7–9 s | 0.44–0.46 | Moderate |
-| 14–15 s | 0.16 | Low |
-
-Only 14–15 s is truly low-motion, and most of the clip is fairly busy. It has the widest motion range of the 20 evaluation encodes. At the 4-frame spacing used to choose the `normal` and `high_motion` subsets, the same clip reads high throughout (0.76–0.97).
+The sample is SA-V video `sav_017083`, 480×848, 24 fps, 577 frames. It is also one of the 20 evaluation videos. 
 
 ### Evaluation
 

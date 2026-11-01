@@ -157,7 +157,7 @@ Results for the prompt `a paw`, with the four original runs back to back on one 
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Dense | 87.9 | 1.00× | 197.1 | 1.00× | 1.000 | 30.68 | 1.80 |
 | EP-ViT 75% | 67.8 | 1.30× | 176.9 | 1.11× | 0.765 | 27.45 | 1.19 |
-| Eventful three gates (best configuration) | 74.7 | 1.17× | 185.2 | 1.05× | 0.701 | 29.70 | 2.72 |
+| Eventful three gates| 74.7 | 1.17× | 185.2 | 1.05× | 0.701 | 29.70 | 2.72 |
 | Eventful (MLP gate only) | 80.4 | 1.09× | 191.7 | 1.03× | 0.851 | 31.02 | 2.65 |
 | Eventful + fused kernel (MLP gate only) | 80.5 | 1.09× | 191.0 | 1.03× | 0.851 | 30.49 | 2.39 |
 

@@ -1,6 +1,6 @@
 # Eventful
 
-Eventful token gating for the SAM 3.1 ViT trunk. A gate around each block's MLP recomputes only the tokens that changed and reuses cached outputs for the rest. SAM's own files are not edited.
+Eventful token gating for the SAM 3.1 ViT trunk. Gates around each block's qkv, proj and MLP recompute only the tokens that changed and reuses cached outputs for the rest. SAM's own files are not edited.
 
 | File | Contents |
 |---|---|

@@ -180,7 +180,7 @@ The sample is SA-V video `sav_017083`, 480×848, 24 fps, 577 frames. It is also 
 
 ### Evaluation
 
-Each method processes 79,794 model steps, so expect several hours per method on one GPU. Runs resume from `pairs/` if interrupted.
+Each method processes 79,794 model steps, so it takes several hours per method on one GPU. Runs resume from `pairs/` if interrupted.
 
 ```bash
 # Check the committed tables (no data or GPU needed)

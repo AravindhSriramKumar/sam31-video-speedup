@@ -1,6 +1,6 @@
 # SAM 3.1 Video Speedup: Accelerating SAM 3.1 Video Inference Through Temporal Computation Reuse
 
-Authors: Aravindh Sriram Kumar and Shaik Sadik. CS6886, IIT Madras.
+Authors: Aravindh Sriram Kumar(CS26S020) and Shaik Sadik(CS26S010). CS6886, IIT Madras.
 
 ## Introduction
 

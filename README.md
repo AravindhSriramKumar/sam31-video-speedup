@@ -165,7 +165,7 @@ Results for the prompt `a paw`, with the four original runs back to back on one 
 - **Mask agreement** is the mean per-frame IoU with Dense on the `a paw` run. It shows how close the masks are to Dense, not which is right.
 - **Eventful gains less here than on `normal` videos** because this clip is mostly high-motion, so most tokens are recomputed.
 
-`results/sample_demo/` holds the saved table and video from this run. The masks of the four original runs are side by side in [`comparison.mp4`](results/sample_demo/comparison.mp4). Colours mark object ids, which differ between runs, so a paw can change colour across panels. The video doesn't include three gates.
+`results/sample_demo/` holds the saved table and video from this run. The masks of all five methods are side by side in [`comparison.mp4`](results/sample_demo/comparison.mp4). Colours mark object ids, which differ between runs, so a paw can change colour across panels.
 
 The sample is SA-V video `sav_017083`, 480×848, 24 fps, 577 frames (24 s), 6.2 MB, copied unchanged from this project's `crf23_g192` encode. It is also one of the 20 evaluation videos. Motion below is the share of 72×72 token cells whose mean absolute luma change between consecutive frames exceeds 8.
 

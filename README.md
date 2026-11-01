@@ -211,7 +211,7 @@ CUDA_VISIBLE_DEVICES=0 python experiments/run_eventful_fused.py --subset high_mo
 python experiments/analyze_results.py
 ```
 
-Accuracy should match the committed tables. Latency depends on your GPU and host load, so compare methods within one machine, ideally side by side.
+Accuracy should match the committed tables. Latency depends on your GPU.
 
 To try one pair, pass a JSON list of pair ids with `--pair-ids`.
 

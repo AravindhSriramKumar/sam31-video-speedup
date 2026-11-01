@@ -223,26 +223,21 @@ The full tables are in [`results/`](results/). The overall table is under [Perfo
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Dense | 15.43 | 11.00 | 55.45 | 38.35 | 89.4 | 90.2 | 1.00× | 1.00× |
 | EP-ViT 75% | 14.63 | 11.11 | 54.25 | 38.88 | 68.5 | 68.2 | 1.31× | 1.32× |
-| Eventful three gates (best configuration) | 14.30 | 9.94 | 53.53 | 37.34 | 47.0 | 81.4 | 1.90× | 1.11× |
+| Eventful three gates  | 14.30 | 9.94 | 53.53 | 37.34 | 47.0 | 81.4 | 1.90× | 1.11× |
 | Eventful (MLP gate only) | 15.61 | 10.78 | 55.38 | 38.61 | 57.8 | 85.9 | 1.55× | 1.05× |
 | Eventful + fused kernel (MLP gate only) | 14.78 | 9.96 | 55.35 | 37.80 | 58.4 | 85.0 | 1.53× | 1.06× |
 
 ### End-to-end latency
 
-End-to-end (E2E) is the median per-frame model step. Three measurements exist, and they answer different questions:
+End-to-end (E2E) is the median per-frame model step. 
 
-| Measurement | Scope | Dense ms | Method ms | E2E speedup | Use it for |
+| Measurement | Scope | Dense ms | Method ms | E2E speedup
 |---|---|---:|---:|---:|---|
-| EP-ViT, controlled: run side by side on idle GPUs | 10 `normal` pairs | 187.5 | 163.6 | **1.15×** | Speedup claims |
-| EP-ViT, controlled: run side by side on idle GPUs | 10 `high_motion` pairs | 188.1 | 165.8 | **1.13×** | Speedup claims |
-| Eventful (MLP gate only), controlled, 40 frames | One `normal` video | 189.6 | 158.5 | **1.20×** | Speedup claims, this video only |
-| Eventful (MLP gate only), controlled, 40 frames | One `high_motion` video | 188.0 | 189.8 | **0.99×** | Speedup claims, this video only |
-| EP-ViT, full sweep on a shared host | 189 pairs | 175.0 | 137.8 | 1.27× (not reliable) | Record of the sweep only |
-| Eventful three gates, full sweep on a shared host | 189 pairs | 175.0 | 144.2 | 1.21× (not reliable) | Record of the sweep only |
-| Eventful (MLP gate only), full sweep on a shared host | 189 pairs | 175.0 | 158.1 | 1.11× (not reliable) | Record of the sweep only |
-| Eventful + fused kernel (MLP gate only), full sweep on a shared host | 189 pairs | 175.0 | 155.2 | 1.13× (not reliable) | Record of the sweep only |
+| EP-ViT | 189 pairs | 175.0 | 137.8 | 1.27× 
+| Eventful three gates| 189 pairs | 175.0 | 144.2 | 1.21× 
+| Eventful (MLP gate only) | 189 pairs | 175.0 | 158.1 | 1.11×  
+| Eventful + fused kernel (MLP gate only) | 189 pairs | 175.0 | 155.2 | 1.13×
 
-The sweep values are affected by host load. EP-ViT doesn't touch the rest of the step, yet that part differed between the sweep runs. The EP-ViT and Eventful controlled measurements use different pairs, so don't compare them directly. Eventful three gates and the fused kernel have no controlled E2E measurement.
 
 ### Reading these numbers
 

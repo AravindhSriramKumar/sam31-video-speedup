@@ -164,15 +164,14 @@ Masks and timings go to `results/runs/sample/`. Change the text prompt with `--p
 
 Results for the prompt `a paw`, with the runs back to back on one idle GPU:
 
-| Method | Encoder ms/frame | Encoder speedup | Median step ms | E2E speedup | pHOTA, `sav_017083` | cgF1, `sav_017083` |
-|---|---:|---:|---:|---:|---:|---:|
-| Dense | 87.9 | 1.00× | 197.1 | 1.00× | 30.68 | 1.80 |
-| EP-ViT 75% | 67.8 | 1.30× | 176.9 | 1.11× | 27.45 | 1.19 |
-| Eventful three gates| 74.7 | 1.17× | 185.2 | 1.05× | 29.70 | 2.72 |
-| Eventful (MLP gate only) | 80.4 | 1.09× | 191.7 | 1.03× | 31.02 | 2.65 |
-| Eventful + fused kernel (MLP gate only) | 80.5 | 1.09× | 191.0 | 1.03× | 30.49 | 2.39 |
+| Method | Encoder ms/frame | Encoder speedup | Median step ms | E2E speedup |
+|---|---:|---:|---:|---:|
+| Dense | 87.9 | 1.00× | 197.1 | 1.00× |
+| EP-ViT 75% | 67.8 | 1.30× | 176.9 | 1.11× |
+| Eventful three gates| 74.7 | 1.17× | 185.2 | 1.05× |
+| Eventful (MLP gate only) | 80.4 | 1.09× | 191.7 | 1.03× |
+| Eventful + fused kernel (MLP gate only) | 80.5 | 1.09× | 191.0 | 1.03× |
 
-- **The sample run has no ground truth,** so it gives no accuracy score of its own. pHOTA and cgF1 above come from the 17 scored evaluation pairs of the same video, `sav_017083`, in `results/per_video_results.csv`. They use other text prompts and the native frames, not the `a paw` run. One video is noisy, especially for cgF1.
 - **Eventful gains less here than on `normal` videos** because this clip is mostly high-motion, so most tokens are recomputed.
 
 `results/sample_demo/` holds the saved table and video from this run. The masks of all five methods are side by side in [`comparison.mp4`](results/sample_demo/comparison.mp4). Colours mark object ids, which differ between runs, so a paw can change colour across panels.

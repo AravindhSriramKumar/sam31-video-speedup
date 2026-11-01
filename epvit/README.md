@@ -5,6 +5,8 @@ Spatio-Temporal Redundancy in Vision Transformer*, ECAI 2025; no public code). H
 every token as static, matchable or unmatchable, and only the tokens that need it are recomputed. The neck, detector,
 tracker and memory are SAM 3.1's own and unchanged. It depends only on `third_party/sam3`.
 
+`codec/` builds the H.264 priors and the per-frame token plan. `model/` holds the encoder and installs it into SAM 3.1.
+
 ## Pipeline
 
 | step | code | output |

@@ -1,6 +1,7 @@
 # Vendored SAM 3 / SAM 3.1
 
 This directory is a vendored copy of https://github.com/facebookresearch/sam3 (no `.git`).
+All four methods in this repository run on this copy of SAM 3.1.
 
 | | |
 |---|---|

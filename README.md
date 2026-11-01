@@ -56,7 +56,7 @@ SA-Co/VEval SA-V val, 20 videos at 24 fps, 189 (video, noun phrase) pairs, offic
 |---|---:|---:|---:|---:|---:|---:|
 | Dense SAM 3.1 (B2d, compiled) | 12.41 | 0 | 48.88 | 0 | 89.9 | 1.00× |
 | EP-ViT 75% (`D_ep75`, compiled) | 12.26 | −0.16 | 48.27 | −0.61 | 68.3 | 1.32× |
-| Eventful three gates (best configuration) | 11.25 | −1.17 | 47.48 | −1.40 | 68.7 | 1.31× |
+| Eventful three gates | 11.25 | −1.17 | 47.48 | −1.40 | 68.7 | 1.31× |
 | Eventful (MLP gate only) | 12.27 | −0.15 | 48.97 | +0.09 | 75.5 | 1.19× |
 | Eventful + fused kernel (MLP gate only) | 11.55 | −0.86 | 48.57 | −0.32 | 75.2 | 1.20× |
 
